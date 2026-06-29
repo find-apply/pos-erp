@@ -1,0 +1,35 @@
+# OS/editor noise
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+.idea/
+.vscode/
+.fleet/
+
+# Dependency directories
+main-file/vendor/
+main-file/node_modules/
+
+# Laravel local environment and runtime files
+main-file/.env
+main-file/.env.*
+!main-file/.env.example
+main-file/auth.json
+main-file/.phpunit.cache/
+main-file/.phpunit.result.cache
+main-file/.phpactor.json
+main-file/Homestead.json
+main-file/Homestead.yaml
+
+# Generated assets and local storage links
+main-file/public/build/
+main-file/public/hot
+main-file/public/storage
+main-file/storage/installed
+main-file/storage/*.key
+
+# Package manager logs
+main-file/npm-debug.log
+main-file/yarn-error.log
+main-file/pnpm-debug.log
