@@ -63,12 +63,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                     return displayUrl ? (
                       <img
                         src={displayUrl}
-                        alt="Logo"
+                        alt={settings.titleText || 'DzERP'}
                         className="w-auto max-w-[180px] transition-all duration-200"
                       />
                     ) : (
                       <div className="h-12 text-inherit font-semibold flex items-center text-lg tracking-tight">
-                        {settings.titleText || 'WorkDo'}
+                        {settings.titleText || 'DzERP'}
                       </div>
                     );
                   })()}
@@ -87,8 +87,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                         className="h-8 w-8 transition-all duration-200"
                       />
                     ) : (
-                      <div className="h-8 w-8 bg-primary text-white rounded flex items-center justify-center font-bold shadow-sm">
-                        W
+                      <div className="h-8 w-8 bg-primary text-white rounded flex items-center justify-center text-xs font-bold shadow-sm">
+                        DZ
                       </div>
                     );
                   })()}

@@ -25,7 +25,7 @@ class PermissionRoleSeeder extends Seeder
                 'email_verified_at' => now(),
                 'password' => Hash::make('1234'),
                 'type' => 'superadmin',
-                'lang' => 'en',
+                'lang' => 'ar',
                 'total_user' => -1,
                 'creator_id' => null,
                 'created_by' => null
@@ -42,7 +42,7 @@ class PermissionRoleSeeder extends Seeder
                 'password' => Hash::make('1234'),
                 'mobile_no' => '1234567890',
                 'type' => 'company',
-                'lang' => 'en',
+                'lang' => 'ar',
                 'creator_id' => $superAdmin->id,
                 'created_by' => $superAdmin->id
             ]

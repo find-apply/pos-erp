@@ -25,7 +25,7 @@ class DemoUserSeeder extends Seeder
                 'mobile_no' => '+1' . sprintf('%010d', 3000000000 + $index),
                 'password' => Hash::make('1234'),
                 'type' => 'company',
-                'lang' => 'en',
+                'lang' => 'ar',
                 'email_verified_at' => now(),
                 'creator_id' => 1,
                 'created_by' => 1

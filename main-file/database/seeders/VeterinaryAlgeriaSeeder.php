@@ -6,6 +6,9 @@ use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Schema;
+use Spatie\Permission\Models\Role;
 
 class VeterinaryAlgeriaSeeder extends Seeder
 {
@@ -21,12 +24,23 @@ class VeterinaryAlgeriaSeeder extends Seeder
             return;
         }
 
+        $company->update([
+            'name' => 'Vetralis Veterinaire Algerie',
+            'lang' => 'ar',
+        ]);
+
         $this->companyId = (int) $company->id;
 
         DB::transaction(function () {
-            DB::statement('SET FOREIGN_KEY_CHECKS=0');
+            $driver = DB::connection()->getDriverName();
+            if ($driver === 'mysql') {
+                DB::statement('SET FOREIGN_KEY_CHECKS=0');
+            } elseif ($driver === 'sqlite') {
+                DB::statement('PRAGMA foreign_keys=OFF');
+            }
 
             $this->clearOldBusinessData();
+            $this->seedSettings();
             $this->seedAccountStructure();
             $this->seedBankAccounts();
             $this->seedRevenueExpenseCategories();
@@ -35,7 +49,11 @@ class VeterinaryAlgeriaSeeder extends Seeder
             $this->seedVeterinaryCatalog();
             $this->seedPosSales();
 
-            DB::statement('SET FOREIGN_KEY_CHECKS=1');
+            if ($driver === 'mysql') {
+                DB::statement('SET FOREIGN_KEY_CHECKS=1');
+            } elseif ($driver === 'sqlite') {
+                DB::statement('PRAGMA foreign_keys=ON');
+            }
         });
 
         $this->command?->info('Veterinary Algeria data seeded for company ID '.$this->companyId.'.');
@@ -83,7 +101,9 @@ class VeterinaryAlgeriaSeeder extends Seeder
         ];
 
         foreach ($allRows as $table) {
-            DB::table($table)->delete();
+            if (Schema::hasTable($table)) {
+                DB::table($table)->delete();
+            }
         }
 
         $companyRows = [
@@ -106,7 +126,31 @@ class VeterinaryAlgeriaSeeder extends Seeder
         ];
 
         foreach ($companyRows as $table) {
-            DB::table($table)->where('created_by', $this->companyId)->delete();
+            if (Schema::hasTable($table)) {
+                DB::table($table)->where('created_by', $this->companyId)->delete();
+            }
+        }
+    }
+
+    private function seedSettings(): void
+    {
+        $now = now();
+        $settings = [
+            'defaultLanguage' => 'ar',
+            'layoutDirection' => 'rtl',
+            'defaultCurrency' => 'DZD',
+            'currencySymbol' => 'د.ج',
+            'currencySymbolPosition' => 'before',
+            'currencySymbolSpace' => '0',
+            'titleText' => 'DzERP',
+            'footerText' => 'Copyright © DzERP',
+        ];
+
+        foreach ($settings as $key => $value) {
+            DB::table('settings')->updateOrInsert(
+                ['key' => $key, 'created_by' => $this->companyId],
+                ['value' => $value, 'is_public' => 1, 'created_at' => $now, 'updated_at' => $now],
+            );
         }
     }
 
@@ -333,6 +377,7 @@ class VeterinaryAlgeriaSeeder extends Seeder
         ];
 
         foreach ($customers as $index => [$code, $company, $person, $email, $mobile, $city, $zip]) {
+            $clientUserId = $clientUsers[$index] ?? $this->upsertPortalUser($company, $email, $mobile, 'client');
             $address = [
                 'name' => $person,
                 'address_line_1' => 'Zone activite '.$city,
@@ -344,7 +389,7 @@ class VeterinaryAlgeriaSeeder extends Seeder
             ];
 
             DB::table('customers')->insert([
-                'user_id' => $clientUsers[$index] ?? null,
+                'user_id' => $clientUserId,
                 'customer_code' => $code,
                 'company_name' => $company,
                 'contact_person_name' => $person,
@@ -370,6 +415,7 @@ class VeterinaryAlgeriaSeeder extends Seeder
         ];
 
         foreach ($vendors as $index => [$code, $company, $person, $email, $mobile, $city, $zip]) {
+            $vendorUserId = $vendorUsers[$index] ?? $this->upsertPortalUser($company, $email, $mobile, 'vendor');
             $address = [
                 'name' => $person,
                 'address_line_1' => 'Zone industrielle '.$city,
@@ -381,7 +427,7 @@ class VeterinaryAlgeriaSeeder extends Seeder
             ];
 
             DB::table('vendors')->insert([
-                'user_id' => $vendorUsers[$index] ?? null,
+                'user_id' => $vendorUserId,
                 'vendor_code' => $code,
                 'company_name' => $company,
                 'contact_person_name' => $person,
@@ -399,6 +445,30 @@ class VeterinaryAlgeriaSeeder extends Seeder
                 'updated_at' => $now,
             ]);
         }
+    }
+
+    private function upsertPortalUser(string $name, string $email, string $mobile, string $type): int
+    {
+        $user = User::updateOrCreate(
+            ['email' => $email],
+            [
+                'name' => $name,
+                'mobile_no' => $mobile,
+                'password' => Hash::make('1234'),
+                'type' => $type,
+                'lang' => 'ar',
+                'email_verified_at' => now(),
+                'creator_id' => $this->companyId,
+                'created_by' => $this->companyId,
+            ],
+        );
+
+        $role = Role::where('name', $type)->where('created_by', $this->companyId)->first();
+        if ($role && ! $user->hasRole($role->name)) {
+            $user->assignRole($role);
+        }
+
+        return (int) $user->id;
     }
 
     private function seedWarehouses(): void

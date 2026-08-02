@@ -1,0 +1,22 @@
+{
+    "name": "workdo/fleet-tracking",
+    "description": "Fleet vehicle and driver work-hours location tracking module",
+    "autoload": {
+        "psr-4": {
+            "Workdo\\FleetTracking\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Workdo",
+            "email": "support@workdo.io"
+        }
+    ],
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Workdo\\FleetTracking\\Providers\\FleetTrackingServiceProvider"
+            ]
+        }
+    }
+}

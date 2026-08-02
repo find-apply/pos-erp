@@ -110,23 +110,24 @@ class DashboardController extends Controller
 
     private function getStats($createdBy)
     {
+        $todayExpression = $this->todayTicketExpression();
+        $avgResponseExpression = $this->avgResponseHoursExpression();
+
         $ticketStats = Ticket::where('created_by', $createdBy)
-            ->selectRaw('
+            ->selectRaw("
                 COUNT(*) as total_tickets,
-                SUM(CASE WHEN status = "In Progress" THEN 1 ELSE 0 END) as open_tickets,
-                SUM(CASE WHEN status = "Closed" THEN 1 ELSE 0 END) as closed_tickets,
-                SUM(CASE WHEN DATE(created_at) = CURDATE() THEN 1 ELSE 0 END) as today_tickets,
-                AVG(TIMESTAMPDIFF(HOUR, created_at, updated_at)) as avg_response_time
-            ')
+                SUM(CASE WHEN status = 'In Progress' THEN 1 ELSE 0 END) as open_tickets,
+                SUM(CASE WHEN status = 'Closed' THEN 1 ELSE 0 END) as closed_tickets,
+                SUM(CASE WHEN {$todayExpression} THEN 1 ELSE 0 END) as today_tickets,
+                {$avgResponseExpression} as avg_response_time
+            ")
             ->first();
 
-        $otherStats = DB::table('ticket_categories')
-            ->selectRaw('
+        $otherStats = DB::selectOne('SELECT
                 (SELECT COUNT(*) FROM ticket_categories WHERE created_by = ?) as categories,
                 (SELECT COUNT(*) FROM support_ticket_knowledge_bases WHERE created_by = ?) as knowledge_base,
                 (SELECT COUNT(*) FROM support_ticket_faqs WHERE created_by = ?) as faqs
-            ', [$createdBy, $createdBy, $createdBy])
-            ->first();
+            ', [$createdBy, $createdBy, $createdBy]);
 
         $totalTickets = $ticketStats->total_tickets;
         $categories = $otherStats->categories;
@@ -175,13 +176,15 @@ class DashboardController extends Controller
 
     private function getMonthlyData($createdBy)
     {
+        $monthExpression = $this->monthExpression('created_at');
+
         $monthlyData = Ticket::select([
-            DB::raw('MONTH(created_at) as month'),
+            DB::raw("{$monthExpression} as month"),
             DB::raw('count(*) as total'),
         ])
-            ->where('created_at', '>', DB::raw('DATE_SUB(NOW(),INTERVAL 1 YEAR)'))
+            ->where('created_at', '>', now()->subYear())
             ->where('created_by', $createdBy)
-            ->groupBy(DB::raw('MONTH(created_at)'))
+            ->groupBy(DB::raw($monthExpression))
             ->pluck('total', 'month')
             ->toArray();
 
@@ -312,13 +315,15 @@ class DashboardController extends Controller
 
     private function getUserTicketStats($userId)
     {
+        $todayExpression = $this->todayTicketExpression();
+
         $stats = Ticket::where('user_id', $userId)
-            ->selectRaw('
+            ->selectRaw("
                 COUNT(*) as total_tickets,
-                SUM(CASE WHEN status = "In Progress" THEN 1 ELSE 0 END) as open_tickets,
-                SUM(CASE WHEN status = "Closed" THEN 1 ELSE 0 END) as closed_tickets,
-                SUM(CASE WHEN DATE(created_at) = CURDATE() THEN 1 ELSE 0 END) as today_tickets
-            ')
+                SUM(CASE WHEN status = 'In Progress' THEN 1 ELSE 0 END) as open_tickets,
+                SUM(CASE WHEN status = 'Closed' THEN 1 ELSE 0 END) as closed_tickets,
+                SUM(CASE WHEN {$todayExpression} THEN 1 ELSE 0 END) as today_tickets
+            ")
             ->first();
 
         return [
@@ -392,13 +397,15 @@ class DashboardController extends Controller
 
     private function getMonthlyDataByUser($userId, $field)
     {
+        $monthExpression = $this->monthExpression('created_at');
+
         $barChart = Ticket::select([
-            DB::raw('MONTH(created_at) as month'),
+            DB::raw("{$monthExpression} as month"),
             DB::raw('count(*) as total'),
         ])
-            ->where('created_at', '>', DB::raw('DATE_SUB(NOW(),INTERVAL 1 YEAR)'))
+            ->where('created_at', '>', now()->subYear())
             ->where($field, $userId)
-            ->groupBy(DB::raw('MONTH(created_at)'))
+            ->groupBy(DB::raw($monthExpression))
             ->get();
 
         $months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -529,16 +536,18 @@ class DashboardController extends Controller
 
     private function getStaffMonthlyDataByUser($userId)
     {
+        $monthExpression = $this->monthExpression('created_at');
+
         $barChart = Ticket::select([
-            DB::raw('MONTH(created_at) as month'),
+            DB::raw("{$monthExpression} as month"),
             DB::raw('count(*) as total'),
         ])
-            ->where('created_at', '>', DB::raw('DATE_SUB(NOW(),INTERVAL 1 YEAR)'))
+            ->where('created_at', '>', now()->subYear())
             ->where(function ($q) use ($userId) {
                 $q->where('creator_id', $userId)
                     ->orWhere('user_id', $userId);
             })
-            ->groupBy(DB::raw('MONTH(created_at)'))
+            ->groupBy(DB::raw($monthExpression))
             ->get();
 
         $months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -631,5 +640,26 @@ class DashboardController extends Controller
     {
         $user = Auth::user();
         return $user->type === 'company' ? $user->slug : (User::find($user->created_by)->slug ?? 'demo');
+    }
+
+    private function monthExpression(string $column): string
+    {
+        return DB::connection()->getDriverName() === 'sqlite'
+            ? "CAST(strftime('%m', {$column}) AS INTEGER)"
+            : "MONTH({$column})";
+    }
+
+    private function todayTicketExpression(): string
+    {
+        return DB::connection()->getDriverName() === 'sqlite'
+            ? "DATE(created_at) = DATE('now')"
+            : 'DATE(created_at) = CURDATE()';
+    }
+
+    private function avgResponseHoursExpression(): string
+    {
+        return DB::connection()->getDriverName() === 'sqlite'
+            ? 'AVG((julianday(updated_at) - julianday(created_at)) * 24)'
+            : 'AVG(TIMESTAMPDIFF(HOUR, created_at, updated_at))';
     }
 }

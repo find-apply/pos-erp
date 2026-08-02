@@ -29,13 +29,13 @@ class DefultSetting extends Seeder
             'footerText' => 'Copyright © Vetralis',
             'sidebarVariant' => 'inset',
             'sidebarStyle' => 'plain',
-            'layoutDirection' => 'ltr',
+            'layoutDirection' => 'rtl',
             'themeMode' => 'light',
             'themeColor' => 'green',
             'customColor' => '#10b77f',
 
             // System Settings
-            'defaultLanguage' => 'en',
+            'defaultLanguage' => 'ar',
             'dateFormat' => 'Y-m-d',
             'timeFormat' => 'H:i',
             'calendarStartDay' => '0',
@@ -45,15 +45,15 @@ class DefultSetting extends Seeder
             'termsConditionsUrl' => '',
 
             // Currency Settings
-            'defaultCurrency' => 'USD',
-            'currencySymbol' => '$',
+            'defaultCurrency' => 'DZD',
+            'currencySymbol' => 'د.ج',
             'currency_format' => '2',
             'decimalFormat' => '2',
             'decimalSeparator' => '.',
             'thousandsSeparator' => ',',
             'floatNumber' => '1',
             'currencySymbolSpace' => '0',
-            'currencySymbolPosition' => 'left',
+            'currencySymbolPosition' => 'before',
 
             // SEO Settings
             'metaKeywords' => 'erpgo, workdo, dashboard, admin, panel, management',

@@ -23,7 +23,7 @@ return new class extends Migration
             $table->unsignedBigInteger('plan_id')->nullable();
             $table->decimal('price', 10, 2);
             $table->decimal('discount_amount', 10, 2)->default(0);
-            $table->string('currency', 3)->default('USD');
+            $table->string('currency', 3)->default('DZD');
             $table->string('txn_id')->nullable();
             $table->enum('payment_status', ['pending', 'succeeded', 'failed', 'refunded'])->default('pending');
             $table->string('payment_type')->default('bank_transfer');

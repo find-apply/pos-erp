@@ -24,7 +24,7 @@ return new class extends Migration
                 $table->rememberToken();
                 $table->string('type')->default('company');
                 $table->string('avatar')->default('avatar.png');
-                $table->string('lang', 191)->default('en');
+                $table->string('lang', 191)->default('ar');
                 $table->integer('active_plan')->default(0);
                 $table->date('plan_expire_date')->nullable();
                 $table->string('trial_expire_date')->nullable();

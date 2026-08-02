@@ -1,0 +1,11 @@
+{
+    "name": "FleetTracking",
+    "alias": "Fleet Tracking",
+    "description": "Track transport vehicles and drivers during work hours with OpenStreetMap and mobile GPS.",
+    "priority": 240,
+    "version": 1.0,
+    "monthly_price": 0,
+    "yearly_price": 0,
+    "parent_module": [],
+    "package_name": "fleet-tracking"
+}

@@ -2,7 +2,7 @@
 
 return [
     'currencies' => [
-        ['id' => 1, 'name' => 'US Dollar', 'code' => 'USD', 'symbol' => '$', 'is_default' => true],
+        ['id' => 1, 'name' => 'US Dollar', 'code' => 'USD', 'symbol' => '$', 'is_default' => false],
         ['id' => 2, 'name' => 'Euro', 'code' => 'EUR', 'symbol' => '€', 'is_default' => false],
         ['id' => 3, 'name' => 'British Pound', 'code' => 'GBP', 'symbol' => '£', 'is_default' => false],
         ['id' => 4, 'name' => 'Japanese Yen', 'code' => 'JPY', 'symbol' => '¥', 'is_default' => false],
@@ -34,7 +34,7 @@ return [
         ['id' => 30, 'name' => 'Philippine Peso', 'code' => 'PHP', 'symbol' => '₱', 'is_default' => false],
         ['id' => 31, 'name' => 'Afghan Afghani', 'code' => 'AFN', 'symbol' => '؋', 'is_default' => false],
         ['id' => 32, 'name' => 'Albanian Lek', 'code' => 'ALL', 'symbol' => 'L', 'is_default' => false],
-        ['id' => 33, 'name' => 'Algerian Dinar', 'code' => 'DZD', 'symbol' => 'د.ج', 'is_default' => false],
+        ['id' => 33, 'name' => 'Algerian Dinar', 'code' => 'DZD', 'symbol' => 'د.ج', 'is_default' => true],
         ['id' => 34, 'name' => 'Angolan Kwanza', 'code' => 'AOA', 'symbol' => 'Kz', 'is_default' => false],
         ['id' => 35, 'name' => 'Argentine Peso', 'code' => 'ARS', 'symbol' => '$', 'is_default' => false],
         ['id' => 36, 'name' => 'Armenian Dram', 'code' => 'AMD', 'symbol' => '֏', 'is_default' => false],

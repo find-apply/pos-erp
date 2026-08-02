@@ -17,7 +17,7 @@ return new class extends Migration
             $table->decimal('price', 10, 2)->nullable();
             $table->string('order_id')->unique();
             $table->enum('status', ['pending', 'approved', 'rejected'])->default('pending');
-            $table->string('price_currency', 3)->default('USD');
+            $table->string('price_currency', 3)->default('DZD');
             $table->string('attachment')->nullable();
             $table->longText('request')->nullable();
             $table->string('type')->nullable();

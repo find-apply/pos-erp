@@ -125,6 +125,7 @@ const formatDateTime = (date: string | Date, pageProps?: any): string => {
 const getImagePath = (path: string, pageProps?: any): string => {
   if (!path || typeof path !== 'string') return '';
   if (path.startsWith('http')) return path;
+  if (path.startsWith('/')) return path;
 
   // Handle workdo package paths or storage/media paths - use baseUrl directly
   if (path.includes('packages/workdo') || path.includes('storage/media')) {

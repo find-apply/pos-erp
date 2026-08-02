@@ -16,6 +16,9 @@ interface BrandSettings {
   customColor?: string;
 }
 
+const DEFAULT_LOGO = '/brand/dzerp-logo.png';
+const DEFAULT_BRAND_NAME = 'DzERP';
+
 interface BrandContextType {
   settings: BrandSettings;
   getPreviewUrl: (path: string) => string;
@@ -39,11 +42,11 @@ export function BrandProvider({ children }: { children: ReactNode }) {
     }
 
   const settings: BrandSettings = {
-    logo_dark: globalSettings?.logo_dark || '',
-    logo_light: globalSettings?.logo_light || '',
-    favicon: globalSettings?.favicon || '',
-    titleText: globalSettings?.titleText || 'WorkDo',
-    footerText: globalSettings?.footerText || 'Copyright © Vetralis',
+    logo_dark: globalSettings?.logo_dark || DEFAULT_LOGO,
+    logo_light: globalSettings?.logo_light || DEFAULT_LOGO,
+    favicon: globalSettings?.favicon || DEFAULT_LOGO,
+    titleText: globalSettings?.titleText || DEFAULT_BRAND_NAME,
+    footerText: globalSettings?.footerText || `Copyright © ${DEFAULT_BRAND_NAME}`,
     sidebarVariant: globalSettings?.sidebarVariant || 'inset',
     sidebarStyle: globalSettings?.sidebarStyle || 'plain',
     layoutDirection: globalSettings?.layoutDirection || 'ltr',

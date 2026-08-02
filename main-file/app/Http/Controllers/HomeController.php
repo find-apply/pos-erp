@@ -22,10 +22,14 @@ class HomeController extends Controller
 
     private function superAdminDashboard()
     {
-        $orderData = Order::selectRaw('MONTH(created_at) as month, COUNT(*) as count, SUM(price) as payments')
+        $monthExpression = Order::query()->getConnection()->getDriverName() === 'sqlite'
+            ? "CAST(strftime('%m', created_at) AS INTEGER)"
+            : 'MONTH(created_at)';
+
+        $orderData = Order::selectRaw("{$monthExpression} as month, COUNT(*) as count, SUM(price) as payments")
             ->whereYear('created_at', now()->year)
-            ->groupBy('month')
-            ->orderBy('month')
+            ->groupByRaw($monthExpression)
+            ->orderByRaw($monthExpression)
             ->get()
             ->keyBy('month');
 

@@ -1,0 +1,14 @@
+{
+    "name": "Zakat",
+    "alias": "Zakat",
+    "description": "Business zakat calculations, explanations, reports, and payments.",
+    "priority": 230,
+    "version": 1.0,
+    "monthly_price": 0,
+    "yearly_price": 0,
+    "parent_module": [
+        "Account",
+        "ProductService"
+    ],
+    "package_name": "zakat"
+}
