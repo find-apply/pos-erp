@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import InputError from "@/components/ui/input-error";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Truck } from "lucide-react";
 
 import { useTranslation } from 'react-i18next';
 import { useFormFields } from '@/hooks/useFormFields';
@@ -206,6 +207,16 @@ export default function Login({
                         </p>
                     </div>
                 )}
+
+                <div className="mt-5 border-t border-gray-100 pt-4 dark:border-gray-700">
+                    <Link
+                        href={route('driver.login')}
+                        className="flex items-center justify-center gap-2 text-sm text-gray-600 transition-colors hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200"
+                    >
+                        <Truck className="h-4 w-4" />
+                        {t('Connexion livreur')}
+                    </Link>
+                </div>
 
                 {isDemo && (
                     <div className="mt-5">

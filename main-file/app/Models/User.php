@@ -45,6 +45,8 @@ class User extends Authenticatable implements MustVerifyEmail
             'active_status',
             'last_seen_at',
             'slug',
+            'fleet_join_code',
+            'fleet_driver_limit',
     ];
 
     /**

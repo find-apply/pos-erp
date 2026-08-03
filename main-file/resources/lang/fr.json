@@ -1704,5 +1704,21 @@
     "You have access to all {{count}} available features as a super admin.": "Vous avez accès à toutes les fonctionnalités disponibles en tant que super administrateur.",
     "You have reached the maximum user limit. Please upgrade your plan.": "Vous avez atteint la limite d'utilisateur maximum. Veuillez mettre à niveau votre plan.",
     "You have unsaved changes. Do you want to discard them?": "Vous avez des modifications non sauvegardées. Voulez-vous les supprimer ?",
-    "items selected for return": "articles sélectionnés pour la restitution"
+    "items selected for return": "articles sélectionnés pour la restitution",
+    "Inscription": "Inscription",
+    "Modules to activate": "Modules à activer",
+    "Your plan": "Votre formule",
+    "{{count}} months free": "{{count}} mois gratuits",
+    "Free trial of {{days}} days for all modules!": "Essai gratuit de {{days}} jours pour tous les modules !",
+    "S'inscrire": "S'inscrire",
+    "Se connecter": "Se connecter",
+    "Your full name": "Votre nom complet",
+    "Connexion livreur": "Connexion livreur",
+    "Inscription livreur": "Inscription livreur",
+    "Livreur login": "Connexion livreur",
+    "Livreur registration": "Inscription livreur",
+    "No livreur account?": "Pas de compte livreur ?",
+    "Company login": "Connexion entreprise",
+    "Company code": "Code de l'entreprise",
+    "Ask your manager for the company fleet code before signing up.": "Demandez le code de flotte à votre responsable avant de vous inscrire."
 }

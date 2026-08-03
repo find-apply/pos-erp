@@ -1704,5 +1704,21 @@
     "You have access to all {{count}} available features as a super admin.": "لديك إمكانية الوصول إلى جميع الميزات المتاحة كمدير أعلى.",
     "You have reached the maximum user limit. Please upgrade your plan.": "لقد وصلت إلى الحد الأقصى للمستخدمين، من فضلك قم بتحديث خطتك",
     "You have unsaved changes. Do you want to discard them?": "لديك تغييرات غير محفوظة هل تريد التخلص منها؟",
-    "items selected for return": "البنود المختارة للعودة"
+    "items selected for return": "البنود المختارة للعودة",
+    "Inscription": "إنشاء حساب",
+    "Modules to activate": "الوحدات المطلوب تفعيلها",
+    "Your plan": "باقتك",
+    "{{count}} months free": "{{count}} أشهر مجانية",
+    "Free trial of {{days}} days for all modules!": "تجربة مجانية لمدة {{days}} أيام لكل الوحدات!",
+    "S'inscrire": "إنشاء حساب",
+    "Se connecter": "تسجيل الدخول",
+    "Your full name": "اسمك الكامل",
+    "Connexion livreur": "دخول السائق",
+    "Inscription livreur": "تسجيل سائق جديد",
+    "Livreur login": "دخول السائق",
+    "Livreur registration": "تسجيل سائق",
+    "No livreur account?": "ليس لديك حساب سائق؟",
+    "Company login": "دخول الشركة",
+    "Company code": "رمز الشركة",
+    "Ask your manager for the company fleet code before signing up.": "اطلب رمز الأسطول من مسؤولك قبل التسجيل."
 }

@@ -4,11 +4,13 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Services\RegistrationCatalog;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -28,7 +30,13 @@ class RegisteredUserController extends Controller
             return redirect()->route('login');
         }
 
-        return Inertia::render('auth/register');
+        $catalog = new RegistrationCatalog();
+
+        return Inertia::render('auth/register', [
+            'moduleCards' => $catalog->cards(),
+            'currency' => $catalog->currency(),
+            'trialDays' => $catalog->trialDays(),
+        ]);
     }
 
     /**
@@ -45,11 +53,17 @@ class RegisteredUserController extends Controller
             return redirect()->route('login');
         }
 
+        $catalog = new RegistrationCatalog();
+
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|string|lowercase|email|max:255|unique:'.User::class,
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
+            'modules' => ['nullable', 'array'],
+            'modules.*' => ['string', Rule::in($catalog->selectableKeys())],
         ]);
+
+        $selection = $catalog->normalizeSelection($request->input('modules', []));
 
         try {
             $enableEmailVerification = admin_setting('enableEmailVerification');
@@ -64,11 +78,15 @@ class RegisteredUserController extends Controller
                 'type' => 'company',
                 'lang' => admin_setting('defaultLanguage') ?? 'en',
                 'created_by' => $adminUser ? $adminUser->id : null,
+                'fleet_join_code' => $catalog->generateJoinCode(),
+                'fleet_driver_limit' => $catalog->driverLimitFor($selection),
             ]);
 
             User::CompanySetting($user->id);
             User::MakeRole($user->id);
             $user->assignRole($user->type);
+
+            $catalog->activateFor($user->id, $selection);
 
             Auth::login($user);
 

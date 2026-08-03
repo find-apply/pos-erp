@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\ConfirmablePasswordController;
+use App\Http\Controllers\Auth\DriverAuthController;
 use App\Http\Controllers\Auth\EmailVerificationNotificationController;
 use App\Http\Controllers\Auth\EmailVerificationPromptController;
 use App\Http\Controllers\Auth\NewPasswordController;
@@ -21,6 +22,14 @@ Route::middleware('guest')->group(function () {
         ->name('login');
 
     Route::post('login', [AuthenticatedSessionController::class, 'store']);
+
+    // Livreur (driver) entry point - separate from the back-office login.
+    Route::prefix('livreur')->name('driver.')->group(function () {
+        Route::get('login', [DriverAuthController::class, 'showLogin'])->name('login');
+        Route::post('login', [DriverAuthController::class, 'login']);
+        Route::get('register', [DriverAuthController::class, 'showRegister'])->name('register');
+        Route::post('register', [DriverAuthController::class, 'register']);
+    });
 
     Route::get('forgot-password', [PasswordResetLinkController::class, 'create'])
         ->name('password.request');
