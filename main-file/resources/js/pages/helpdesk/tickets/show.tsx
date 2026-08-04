@@ -187,7 +187,7 @@ export default function Show() {
 
                         {/* Reply Form - Fixed at Bottom */}
                         {auth.user?.permissions?.includes('create-helpdesk-replies') && (
-                            <div className="border-t bg-white">
+                            <div className="border-t bg-card">
                                 {ticket.status === 'closed' && auth.user?.type !== 'superadmin' ? (
                                     <div className="p-4 text-center text-gray-600 bg-gray-50">
                                         {t('Ticket is closed and cannot send reply.')}

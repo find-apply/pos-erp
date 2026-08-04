@@ -235,7 +235,7 @@ export default function SeoSettings({ userSettings, auth }: SeoSettingsProps) {
 
                     {/* Social Media Preview */}
                     {settings.metaImage && (
-                      <div className="border rounded-md bg-white p-3">
+                      <div className="border rounded-md bg-card p-3">
                         <div className="text-xs text-muted-foreground mb-2">{t('Social Media Preview')}</div>
                         <img
                           src={getImagePath(settings.metaImage)}
