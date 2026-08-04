@@ -20,6 +20,8 @@ import { useTranslation } from 'react-i18next';
 import { Button } from "@/components/ui/button";
 import { UserX, ArrowLeft } from "lucide-react";
 import { useFlashMessages } from "@/hooks/useFlashMessages";
+import { CommandPalette } from "@/components/command-palette";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 function AuthenticatedLayoutContent({
     header,
@@ -107,6 +109,11 @@ function AuthenticatedLayoutContent({
                         </Breadcrumb>
                     </div>
 
+                    {/* Global search - opens with Cmd/Ctrl-K */}
+                    <div className="mx-4 hidden min-w-0 flex-1 justify-center md:flex">
+                        <CommandPalette />
+                    </div>
+
                     {/* NavUser */}
                     <div
                         className={`flex items-center gap-2 ${
@@ -125,6 +132,7 @@ function AuthenticatedLayoutContent({
                                 {t('Leave Login As User')}
                             </Button>
                         )}
+                        <ThemeToggle />
                         <NavUser user={auth.user} inHeader={true} />
                     </div>
                 </header>

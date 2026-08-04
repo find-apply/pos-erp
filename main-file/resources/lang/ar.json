@@ -1725,5 +1725,9 @@
     "Distribution": "التوزيع",
     "Production": "الإنتاج",
     "Resources": "الموارد",
-    "Search menu...": "ابحث في القائمة..."
+    "Search menu...": "ابحث في القائمة...",
+    "Type a page name...": "اكتب اسم الصفحة...",
+    "No results found.": "لا توجد نتائج.",
+    "Switch to light mode": "التبديل إلى الوضع الفاتح",
+    "Switch to dark mode": "التبديل إلى الوضع الداكن"
 }

@@ -1725,5 +1725,9 @@
     "Distribution": "Distribution",
     "Production": "Production",
     "Resources": "Ressources",
-    "Search menu...": "Rechercher..."
+    "Search menu...": "Rechercher...",
+    "Type a page name...": "Tapez le nom d'une page...",
+    "No results found.": "Aucun résultat.",
+    "Switch to light mode": "Passer en mode clair",
+    "Switch to dark mode": "Passer en mode sombre"
 }
