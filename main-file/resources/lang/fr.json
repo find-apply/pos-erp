@@ -1720,5 +1720,10 @@
     "No livreur account?": "Pas de compte livreur ?",
     "Company login": "Connexion entreprise",
     "Company code": "Code de l'entreprise",
-    "Ask your manager for the company fleet code before signing up.": "Demandez le code de flotte à votre responsable avant de vous inscrire."
+    "Ask your manager for the company fleet code before signing up.": "Demandez le code de flotte à votre responsable avant de vous inscrire.",
+    "Commerce": "Commerce",
+    "Distribution": "Distribution",
+    "Production": "Production",
+    "Resources": "Ressources",
+    "Search menu...": "Rechercher..."
 }

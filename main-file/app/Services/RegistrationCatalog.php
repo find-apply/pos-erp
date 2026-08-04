@@ -2,8 +2,10 @@
 
 namespace App\Services;
 
+use App\Events\DefaultData;
+use App\Events\GivePermissionToRole;
 use App\Models\UserActiveModule;
-use Illuminate\Support\Str;
+use Spatie\Permission\Models\Role;
 
 /**
  * Turns config/registration_modules.php into the payload the registration
@@ -183,15 +185,39 @@ class RegistrationCatalog
     /**
      * Persist the selection for a freshly created company.
      *
+     * Writing `user_active_modules` alone is not enough: a module's menu
+     * entries are hidden unless the matching permissions exist and are granted
+     * to the company's roles. Each package listens for DefaultData and
+     * GivePermissionToRole to seed its own defaults and permissions, so both
+     * events have to fire - otherwise the user logs in to an empty sidebar.
+     *
      * @param  array<int, string>  $keys
      */
     public function activateFor(int $userId, array $keys): void
     {
-        foreach ($this->modulesFor($keys) as $module) {
+        $modules = $this->modulesFor($keys);
+
+        foreach ($modules as $module) {
             UserActiveModule::firstOrCreate([
                 'user_id' => $userId,
                 'module' => $module,
             ]);
+        }
+
+        if (!$modules) {
+            return;
+        }
+
+        $moduleList = implode(',', $modules);
+
+        DefaultData::dispatch($userId, $moduleList);
+
+        foreach (['company', 'staff', 'client'] as $roleName) {
+            $role = Role::where('name', $roleName)->where('created_by', $userId)->first();
+
+            if ($role) {
+                GivePermissionToRole::dispatch($role->id, $roleName, $moduleList);
+            }
         }
     }
 

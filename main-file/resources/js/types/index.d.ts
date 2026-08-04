@@ -21,6 +21,8 @@ export interface NavItem {
     name?: string;
     order?: number;
     activePaths?: string[];
+    /** Sidebar section this item is grouped under, e.g. "COMMERCE". */
+    section?: string;
 }
 
 export type PageProps<

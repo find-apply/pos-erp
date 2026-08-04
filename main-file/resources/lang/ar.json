@@ -1720,5 +1720,10 @@
     "No livreur account?": "ليس لديك حساب سائق؟",
     "Company login": "دخول الشركة",
     "Company code": "رمز الشركة",
-    "Ask your manager for the company fleet code before signing up.": "اطلب رمز الأسطول من مسؤولك قبل التسجيل."
+    "Ask your manager for the company fleet code before signing up.": "اطلب رمز الأسطول من مسؤولك قبل التسجيل.",
+    "Commerce": "التجارة",
+    "Distribution": "التوزيع",
+    "Production": "الإنتاج",
+    "Resources": "الموارد",
+    "Search menu...": "ابحث في القائمة..."
 }

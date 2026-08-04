@@ -1720,5 +1720,10 @@
     "No livreur account?": "No driver account?",
     "Company login": "Company login",
     "Company code": "Company code",
-    "Ask your manager for the company fleet code before signing up.": "Ask your manager for the company fleet code before signing up."
+    "Ask your manager for the company fleet code before signing up.": "Ask your manager for the company fleet code before signing up.",
+    "Commerce": "Commerce",
+    "Distribution": "Distribution",
+    "Production": "Production",
+    "Resources": "Resources",
+    "Search menu...": "Search menu..."
 }
