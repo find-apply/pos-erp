@@ -1,0 +1,248 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <title>DzERP - دليل العميل</title>
+  <style>
+    @page { size: A4; margin: 14mm 12mm; }
+    * { box-sizing: border-box; }
+    body {
+      direction: rtl;
+      font-family: "Arial", "Tahoma", sans-serif;
+      color: #1f2933;
+      background: #ffffff;
+      font-size: 13px;
+      line-height: 1.7;
+      margin: 0;
+    }
+    .cover {
+      min-height: 265mm;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      page-break-after: always;
+      border: 2px solid #0f766e;
+      border-radius: 18px;
+      padding: 30mm 18mm;
+      background: linear-gradient(180deg, #f8fafc 0%, #ffffff 55%, #ecfdf5 100%);
+    }
+    .cover-logo {
+      width: 122px;
+      height: auto;
+      border: 0;
+      margin-bottom: 24px;
+      background: transparent;
+    }
+    .cover h1 {
+      border: 0;
+      font-size: 36px;
+      margin: 0 0 12px;
+    }
+    .cover .subtitle {
+      font-size: 18px;
+      color: #0f766e;
+      margin-bottom: 20px;
+    }
+    .cover .summary {
+      max-width: 140mm;
+      font-size: 14px;
+      color: #334155;
+      margin-bottom: 24px;
+    }
+    .cover-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      width: 145mm;
+      margin-top: 10px;
+    }
+    .cover-card {
+      border: 1px solid #cbd5e1;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.78);
+      padding: 10px 12px;
+      color: #0f172a;
+      font-weight: 700;
+    }
+    .toc {
+      page-break-after: always;
+      padding-top: 8mm;
+    }
+    .toc-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      margin-top: 18px;
+    }
+    .toc-item {
+      border: 1px solid #d8dee9;
+      border-radius: 8px;
+      padding: 10px 12px;
+      background: #f8fafc;
+      min-height: 38px;
+    }
+    .toc-item strong {
+      display: block;
+      color: #0f766e;
+      margin-bottom: 3px;
+    }
+    h1, h2, h3 {
+      color: #0f172a;
+      line-height: 1.35;
+      margin: 0 0 10px;
+      page-break-after: avoid;
+    }
+    h1 {
+      font-size: 30px;
+      padding-bottom: 12px;
+      border-bottom: 3px solid #0f766e;
+      margin-bottom: 18px;
+    }
+    h2 {
+      font-size: 22px;
+      margin-top: 28px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid #d8dee9;
+    }
+    h3 {
+      font-size: 17px;
+      margin-top: 20px;
+      color: #0f766e;
+    }
+    .shot-page {
+      min-height: 268mm;
+      page-break-after: always;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      padding-top: 2mm;
+    }
+    .shot-header {
+      border-bottom: 3px solid #0f766e;
+      padding-bottom: 9px;
+      margin-bottom: 10px;
+    }
+    .shot-header .category {
+      color: #0f766e;
+      font-size: 12px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+    .shot-header h1 {
+      border: 0;
+      margin: 0;
+      padding: 0;
+      font-size: 26px;
+    }
+    .explanation {
+      border: 1px solid #d8dee9;
+      background: #f8fafc;
+      border-radius: 8px;
+      padding: 9px 12px;
+      margin: 0 0 10px;
+    }
+    .explanation p {
+      margin: 0 0 7px;
+    }
+    .explanation p:last-child {
+      margin-bottom: 0;
+    }
+    .appendix {
+      justify-content: flex-start;
+    }
+    p { margin: 8px 0 12px; }
+    ul {
+      margin: 8px 24px 16px 0;
+      padding: 0;
+    }
+    li { margin: 4px 0; }
+    code {
+      direction: ltr;
+      unicode-bidi: embed;
+      background: #eef2f7;
+      border-radius: 4px;
+      padding: 1px 5px;
+      font-family: "Menlo", monospace;
+      font-size: 12px;
+    }
+    figure {
+      margin: 0;
+      padding: 9px;
+      border: 1px solid #d8dee9;
+      border-radius: 8px;
+      background: #f8fafc;
+      page-break-inside: avoid;
+    }
+    img {
+      display: block;
+      max-width: 100%;
+      max-height: 213mm;
+      height: auto;
+      margin: 0 auto;
+      border-radius: 4px;
+      border: 1px solid #e5e7eb;
+      background: #ffffff;
+    }
+    figcaption {
+      text-align: center;
+      font-size: 12px;
+      color: #475569;
+      margin-top: 8px;
+    }
+    </style>
+</head>
+<body>
+<section class="shot-page"><div class="shot-header"><div class="category">1. تسجيل الدخول</div><h1>تسجيل الدخول</h1></div><div class="explanation"><p>هذا العرض يوضح نسخة DzERP المجهزة لشركة منتجات وخدمات بيطرية في الجزائر، مع اللغة العربية، اتجاه RTL، وعملة الدينار الجزائري <code>DZD</code>.</p>
+<ul><li>حساب الشركة: <code>company@example.com</code></li>
+<li>كلمة المرور: <code>1234</code></li></ul>
+<p>يدخل المستخدم إلى النظام من صفحة تسجيل الدخول. الواجهة عربية والهوية البصرية تحمل اسم DzERP.</p></div><figure><img src='file:///Users/mabrouk/Documents/GitHub/pos-erp/main-file/docs/screenshots/01-login.jpg' alt='تسجيل الدخول'><figcaption>تسجيل الدخول</figcaption></figure></section>
+<section class="shot-page"><div class="shot-header"><div class="category">2. لوحة التحكم</div><h1>لوحة التحكم</h1></div><div class="explanation"><p>بعد تسجيل الدخول تظهر لوحة التحكم الرئيسية، ومنها يمكن الوصول إلى المبيعات، المنتجات، المخازن، POS، الإعدادات وباقي الوحدات.</p></div><figure><img src='file:///Users/mabrouk/Documents/GitHub/pos-erp/main-file/docs/screenshots/02-dashboard.jpg' alt='لوحة التحكم'><figcaption>لوحة التحكم</figcaption></figure></section>
+<section class="shot-page"><div class="shot-header"><div class="category">3. إدارة المنتجات والخدمات</div><h1>إدارة المنتجات</h1></div><div class="explanation"><p>صفحة العناصر تعرض منتجات الشركة البيطرية: أدوية، لقاحات، مضادات طفيليات، مكملات، معدات عيادية وخدمات بيطرية. كل عنصر يحتوي على SKU، سعر بيع، سعر شراء، تصنيف، وحدة وكمية.</p></div><figure><img src='file:///Users/mabrouk/Documents/GitHub/pos-erp/main-file/docs/screenshots/03-products.jpg' alt='إدارة المنتجات'><figcaption>إدارة المنتجات</figcaption></figure></section>
+<section class="shot-page"><div class="shot-header"><div class="category">4. متابعة المخزون</div><h1>مخزون المنتجات</h1></div><div class="explanation"><p>صفحة مخزون المنتج تعطي نظرة مباشرة على الكمية المتوفرة لكل منتج. هذه الشاشة مهمة لمتابعة المنتجات الحساسة مثل اللقاحات والأدوية.</p></div><figure><img src='file:///Users/mabrouk/Documents/GitHub/pos-erp/main-file/docs/screenshots/04-stock.jpg' alt='مخزون المنتجات'><figcaption>مخزون المنتجات</figcaption></figure></section>
+<section class="shot-page"><div class="shot-header"><div class="category">5. إدارة المخازن</div><h1>المخازن</h1></div><div class="explanation"><p>تم تجهيز ثلاث نقاط تخزين جزائرية: Blida، Alger و Oran. يمكن للعميل متابعة عنوان كل مخزن وحالته.</p></div><figure><img src='file:///Users/mabrouk/Documents/GitHub/pos-erp/main-file/docs/screenshots/05-warehouses.jpg' alt='المخازن'><figcaption>المخازن</figcaption></figure></section>
+<section class="shot-page"><div class="shot-header"><div class="category">6. لوحة تحكم POS</div><h1>لوحة تحكم POS</h1></div><div class="explanation"><p>لوحة POS تعرض مؤشرات البيع: إيرادات اليوم، إجمالي المبيعات، متوسط المعاملات، عدد العملاء، وعدد المنتجات.</p></div><figure><img src='file:///Users/mabrouk/Documents/GitHub/pos-erp/main-file/docs/screenshots/06-pos-dashboard.jpg' alt='لوحة تحكم POS'><figcaption>لوحة تحكم POS</figcaption></figure></section>
+<section class="shot-page"><div class="shot-header"><div class="category">7. أوامر POS</div><h1>أوامر POS</h1></div><div class="explanation"><p>قائمة أوامر POS تعرض المبيعات التجريبية لمنتجات Vetralis مع رقم البيع، العميل، المخزن والإجمالي بالدينار الجزائري.</p></div><figure><img src='file:///Users/mabrouk/Documents/GitHub/pos-erp/main-file/docs/screenshots/07-pos-orders.jpg' alt='أوامر POS'><figcaption>أوامر POS</figcaption></figure></section>
+<section class="shot-page"><div class="shot-header"><div class="category">8. إنشاء عملية بيع POS</div><h1>إنشاء بيع POS</h1></div><div class="explanation"><p>من شاشة Add POS يستطيع المستخدم اختيار العميل، المخزن، التصنيف، ثم إضافة المنتجات البيطرية إلى السلة وإتمام البيع.</p></div><figure><img src='file:///Users/mabrouk/Documents/GitHub/pos-erp/main-file/docs/screenshots/08-pos-create.jpg' alt='إنشاء بيع POS'><figcaption>إنشاء بيع POS</figcaption></figure></section>
+<section class="shot-page"><div class="shot-header"><div class="category">إدارة المستخدمين والصلاحيات</div><h1>المستخدمون</h1></div><div class="explanation"><p>الصور التالية تغطي باقي الوحدات المهمة التي يمكن عرضها للعميل أثناء شرح النظام.</p>
+<p>من هذه الشاشة يمكن للمدير إنشاء حسابات المستخدمين، متابعة بياناتهم، وتحديد من يستطيع الدخول إلى النظام.</p></div><figure><img src='file:///Users/mabrouk/Documents/GitHub/pos-erp/main-file/docs/screenshots/09-users.jpg' alt='المستخدمون'><figcaption>المستخدمون</figcaption></figure></section>
+<section class="shot-page"><div class="shot-header"><div class="category">إدارة المستخدمين والصلاحيات</div><h1>الأدوار والصلاحيات</h1></div><div class="explanation"><p>صفحة الأدوار تسمح بتقسيم الصلاحيات حسب الوظيفة: مدير، محاسب، مسؤول مخزون، موظف مبيعات أو مستخدم محدود.</p></div><figure><img src='file:///Users/mabrouk/Documents/GitHub/pos-erp/main-file/docs/screenshots/10-roles.jpg' alt='الأدوار والصلاحيات'><figcaption>الأدوار والصلاحيات</figcaption></figure></section>
+<section class="shot-page"><div class="shot-header"><div class="category">المبيعات والمشتريات</div><h1>عروض البيع</h1></div><div class="explanation"><p>عروض البيع تستعمل قبل إصدار الفاتورة، عندما يريد العميل طلب سعر أو عرض تجاري رسمي للمنتجات البيطرية.</p></div><figure><img src='file:///Users/mabrouk/Documents/GitHub/pos-erp/main-file/docs/screenshots/11-sales-proposals.jpg' alt='عروض البيع'><figcaption>عروض البيع</figcaption></figure></section>
+<section class="shot-page"><div class="shot-header"><div class="category">المبيعات والمشتريات</div><h1>فواتير البيع</h1></div><div class="explanation"><p>فواتير البيع هي الشاشة الأساسية لتوثيق المبيعات، متابعة حالة الدفع، وطباعة أو إرسال الفاتورة للعميل.</p></div><figure><img src='file:///Users/mabrouk/Documents/GitHub/pos-erp/main-file/docs/screenshots/12-sales-invoices.jpg' alt='فواتير البيع'><figcaption>فواتير البيع</figcaption></figure></section>
+<section class="shot-page"><div class="shot-header"><div class="category">المبيعات والمشتريات</div><h1>مرتجعات البيع</h1></div><div class="explanation"><p>مرتجعات البيع تساعد في تسجيل المنتجات التي رجعت من العميل، مع تحديث الحسابات والمخزون بطريقة منظمة.</p></div><figure><img src='file:///Users/mabrouk/Documents/GitHub/pos-erp/main-file/docs/screenshots/13-sales-returns.jpg' alt='مرتجعات البيع'><figcaption>مرتجعات البيع</figcaption></figure></section>
+<section class="shot-page"><div class="shot-header"><div class="category">المبيعات والمشتريات</div><h1>فواتير الشراء</h1></div><div class="explanation"><p>فواتير الشراء مخصصة لتسجيل مشتريات الشركة من الموردين، مثل الأدوية، اللقاحات، المعدات والمواد الاستهلاكية.</p></div><figure><img src='file:///Users/mabrouk/Documents/GitHub/pos-erp/main-file/docs/screenshots/14-purchase-invoices.jpg' alt='فواتير الشراء'><figcaption>فواتير الشراء</figcaption></figure></section>
+<section class="shot-page"><div class="shot-header"><div class="category">المبيعات والمشتريات</div><h1>مرتجعات الشراء</h1></div><div class="explanation"><p>مرتجعات الشراء تستعمل عند إرجاع منتجات للمورد بسبب خطأ، تلف، انتهاء صلاحية أو اختلاف في الكمية.</p></div><figure><img src='file:///Users/mabrouk/Documents/GitHub/pos-erp/main-file/docs/screenshots/15-purchase-returns.jpg' alt='مرتجعات الشراء'><figcaption>مرتجعات الشراء</figcaption></figure></section>
+<section class="shot-page"><div class="shot-header"><div class="category">المبيعات والمشتريات</div><h1>تحويلات المخزون</h1></div><div class="explanation"><p>تحويلات المخزون تسمح بنقل المنتجات بين المخازن، مثلا من مخزن الجزائر إلى مخزن وهران أو البليدة.</p></div><figure><img src='file:///Users/mabrouk/Documents/GitHub/pos-erp/main-file/docs/screenshots/16-transfers.jpg' alt='تحويلات المخزون'><figcaption>تحويلات المخزون</figcaption></figure></section>
+<section class="shot-page"><div class="shot-header"><div class="category">المبيعات والمشتريات</div><h1>الاقتباسات</h1></div><div class="explanation"><p>الاقتباسات تساعد الفريق التجاري في تحضير عروض أسعار مرنة قبل تأكيد البيع النهائي.</p></div><figure><img src='file:///Users/mabrouk/Documents/GitHub/pos-erp/main-file/docs/screenshots/25-quotations.jpg' alt='الاقتباسات'><figcaption>الاقتباسات</figcaption></figure></section>
+<section class="shot-page"><div class="shot-header"><div class="category">المحاسبة</div><h1>لوحة تحكم الحسابات</h1></div><div class="explanation"><p>لوحة تحكم الحسابات تعرض مؤشرات مالية مختصرة مثل الإيرادات، المصاريف، الحسابات، وحركة الأموال.</p></div><figure><img src='file:///Users/mabrouk/Documents/GitHub/pos-erp/main-file/docs/screenshots/17-account-dashboard.jpg' alt='لوحة تحكم الحسابات'><figcaption>لوحة تحكم الحسابات</figcaption></figure></section>
+<section class="shot-page"><div class="shot-header"><div class="category">المحاسبة</div><h1>العملاء</h1></div><div class="explanation"><p>صفحة العملاء تجمع بيانات العيادات، المربين، الصيدليات البيطرية والمؤسسات التي تشتري من الشركة.</p></div><figure><img src='file:///Users/mabrouk/Documents/GitHub/pos-erp/main-file/docs/screenshots/18-customers.jpg' alt='العملاء'><figcaption>العملاء</figcaption></figure></section>
+<section class="shot-page"><div class="shot-header"><div class="category">المحاسبة</div><h1>الموردون</h1></div><div class="explanation"><p>صفحة الموردين تحفظ بيانات الشركات والموزعين الذين يزوّدون المؤسسة بالمنتجات البيطرية.</p></div><figure><img src='file:///Users/mabrouk/Documents/GitHub/pos-erp/main-file/docs/screenshots/19-vendors.jpg' alt='الموردون'><figcaption>الموردون</figcaption></figure></section>
+<section class="shot-page"><div class="shot-header"><div class="category">المحاسبة</div><h1>الحسابات البنكية</h1></div><div class="explanation"><p>الحسابات البنكية تساعد في متابعة أرصدة الشركة وطرق الدفع والتحويلات المالية.</p></div><figure><img src='file:///Users/mabrouk/Documents/GitHub/pos-erp/main-file/docs/screenshots/20-bank-accounts.jpg' alt='الحسابات البنكية'><figcaption>الحسابات البنكية</figcaption></figure></section>
+<section class="shot-page"><div class="shot-header"><div class="category">المحاسبة</div><h1>دليل الحسابات</h1></div><div class="explanation"><p>دليل الحسابات ينظم الحسابات المحاسبية مثل المبيعات، المشتريات، النقدية، الضرائب والمصاريف.</p></div><figure><img src='file:///Users/mabrouk/Documents/GitHub/pos-erp/main-file/docs/screenshots/21-chart-of-accounts.jpg' alt='دليل الحسابات'><figcaption>دليل الحسابات</figcaption></figure></section>
+<section class="shot-page"><div class="shot-header"><div class="category">المحاسبة</div><h1>الإيرادات</h1></div><div class="explanation"><p>الإيرادات تسجل مداخيل الشركة خارج أو داخل العمليات التجارية حسب نوع النشاط.</p></div><figure><img src='file:///Users/mabrouk/Documents/GitHub/pos-erp/main-file/docs/screenshots/22-revenues.jpg' alt='الإيرادات'><figcaption>الإيرادات</figcaption></figure></section>
+<section class="shot-page"><div class="shot-header"><div class="category">المحاسبة</div><h1>المصاريف</h1></div><div class="explanation"><p>المصاريف تسمح بتسجيل تكاليف التشغيل مثل النقل، الكراء، الرواتب، اللوازم والخدمات.</p></div><figure><img src='file:///Users/mabrouk/Documents/GitHub/pos-erp/main-file/docs/screenshots/23-expenses.jpg' alt='المصاريف'><figcaption>المصاريف</figcaption></figure></section>
+<section class="shot-page"><div class="shot-header"><div class="category">المحاسبة</div><h1>تقارير الحسابات</h1></div><div class="explanation"><p>تقارير الحسابات تعطي للمدير أو المحاسب نظرة أوضح على الأداء المالي واتجاهات الدخل والصرف.</p></div><figure><img src='file:///Users/mabrouk/Documents/GitHub/pos-erp/main-file/docs/screenshots/24-account-reports.jpg' alt='تقارير الحسابات'><figcaption>تقارير الحسابات</figcaption></figure></section>
+<section class="shot-page"><div class="shot-header"><div class="category">المحاسبة</div><h1>القيد المزدوج</h1></div><div class="explanation"><p>القيد المزدوج مخصص للمحاسبة المتقدمة، حيث يتم تسجيل العمليات في حسابين أو أكثر لضمان التوازن المحاسبي.</p></div><figure><img src='file:///Users/mabrouk/Documents/GitHub/pos-erp/main-file/docs/screenshots/46-double-entry.jpg' alt='القيد المزدوج'><figcaption>القيد المزدوج</figcaption></figure></section>
+<section class="shot-page"><div class="shot-header"><div class="category">المشاريع و CRM</div><h1>لوحة تحكم المشاريع</h1></div><div class="explanation"><p>لوحة تحكم المشاريع تعرض حالة المشاريع والمهام، وتفيد عند متابعة حملات توزيع أو خدمات بيطرية ميدانية.</p></div><figure><img src='file:///Users/mabrouk/Documents/GitHub/pos-erp/main-file/docs/screenshots/26-project-dashboard.jpg' alt='لوحة تحكم المشاريع'><figcaption>لوحة تحكم المشاريع</figcaption></figure></section>
+<section class="shot-page"><div class="shot-header"><div class="category">المشاريع و CRM</div><h1>المشاريع</h1></div><div class="explanation"><p>صفحة المشاريع تجمع كل مشروع مع حالته، الفريق المسؤول عنه، والمواعيد المرتبطة به.</p></div><figure><img src='file:///Users/mabrouk/Documents/GitHub/pos-erp/main-file/docs/screenshots/27-projects.jpg' alt='المشاريع'><figcaption>المشاريع</figcaption></figure></section>
+<section class="shot-page"><div class="shot-header"><div class="category">المشاريع و CRM</div><h1>لوحة تحكم CRM</h1></div><div class="explanation"><p>لوحة CRM تساعد في متابعة العلاقات التجارية: عدد العملاء المحتملين، الصفقات، المستخدمين والعملاء.</p></div><figure><img src='file:///Users/mabrouk/Documents/GitHub/pos-erp/main-file/docs/screenshots/28-crm-dashboard.jpg' alt='لوحة تحكم CRM'><figcaption>لوحة تحكم CRM</figcaption></figure></section>
+<section class="shot-page"><div class="shot-header"><div class="category">المشاريع و CRM</div><h1>العملاء المحتملون</h1></div><div class="explanation"><p>العملاء المحتملون هم الفرص التجارية الأولى، مثل عيادة أو موزع مهتم بالمنتجات ولم يصبح عميلا بعد.</p></div><figure><img src='file:///Users/mabrouk/Documents/GitHub/pos-erp/main-file/docs/screenshots/29-leads.jpg' alt='العملاء المحتملون'><figcaption>العملاء المحتملون</figcaption></figure></section>
+<section class="shot-page"><div class="shot-header"><div class="category">المشاريع و CRM</div><h1>الصفقات</h1></div><div class="explanation"><p>الصفقات تمثل فرص البيع النشطة، ويمكن متابعتها حسب المرحلة والقيمة والمسؤول التجاري.</p></div><figure><img src='file:///Users/mabrouk/Documents/GitHub/pos-erp/main-file/docs/screenshots/30-deals.jpg' alt='الصفقات'><figcaption>الصفقات</figcaption></figure></section>
+<section class="shot-page"><div class="shot-header"><div class="category">الموارد البشرية</div><h1>لوحة تحكم الموارد البشرية</h1></div><div class="explanation"><p>لوحة الموارد البشرية تعرض مؤشرات الموظفين، الحضور، الرواتب والتنظيم الداخلي للشركة.</p></div><figure><img src='file:///Users/mabrouk/Documents/GitHub/pos-erp/main-file/docs/screenshots/31-hrm-dashboard.jpg' alt='لوحة تحكم الموارد البشرية'><figcaption>لوحة تحكم الموارد البشرية</figcaption></figure></section>
+<section class="shot-page"><div class="shot-header"><div class="category">الموارد البشرية</div><h1>الموظفون</h1></div><div class="explanation"><p>صفحة الموظفين تحفظ بيانات الفريق، المناصب، الأقسام، ومعلومات العمل لكل موظف.</p></div><figure><img src='file:///Users/mabrouk/Documents/GitHub/pos-erp/main-file/docs/screenshots/32-employees.jpg' alt='الموظفون'><figcaption>الموظفون</figcaption></figure></section>
+<section class="shot-page"><div class="shot-header"><div class="category">الموارد البشرية</div><h1>الحضور</h1></div><div class="explanation"><p>الحضور يستعمل لمتابعة دخول وخروج الموظفين، الغيابات والتأخرات اليومية.</p></div><figure><img src='file:///Users/mabrouk/Documents/GitHub/pos-erp/main-file/docs/screenshots/33-attendance.jpg' alt='الحضور'><figcaption>الحضور</figcaption></figure></section>
+<section class="shot-page"><div class="shot-header"><div class="category">الموارد البشرية</div><h1>كشوف الرواتب</h1></div><div class="explanation"><p>كشوف الرواتب تساعد في تحضير وتتبع رواتب الموظفين، البدلات، الخصومات والدفع الشهري.</p></div><figure><img src='file:///Users/mabrouk/Documents/GitHub/pos-erp/main-file/docs/screenshots/34-payrolls.jpg' alt='كشوف الرواتب'><figcaption>كشوف الرواتب</figcaption></figure></section>
+<section class="shot-page"><div class="shot-header"><div class="category">الدعم والعقود والتنظيم</div><h1>لوحة تحكم الدعم</h1></div><div class="explanation"><p>لوحة الدعم تعرض مؤشرات تذاكر العملاء: المفتوحة، المغلقة، تذاكر اليوم ومتوسط وقت الرد.</p></div><figure><img src='file:///Users/mabrouk/Documents/GitHub/pos-erp/main-file/docs/screenshots/38-support-dashboard.jpg' alt='لوحة تحكم الدعم'><figcaption>لوحة تحكم الدعم</figcaption></figure></section>
+<section class="shot-page"><div class="shot-header"><div class="category">الدعم والعقود والتنظيم</div><h1>تذاكر الدعم</h1></div><div class="explanation"><p>تذاكر الدعم تستعمل لتسجيل مشاكل أو طلبات العملاء ومتابعة الردود حتى الإغلاق.</p></div><figure><img src='file:///Users/mabrouk/Documents/GitHub/pos-erp/main-file/docs/screenshots/39-support-tickets.jpg' alt='تذاكر الدعم'><figcaption>تذاكر الدعم</figcaption></figure></section>
+<section class="shot-page"><div class="shot-header"><div class="category">الدعم والعقود والتنظيم</div><h1>قاعدة المعرفة</h1></div><div class="explanation"><p>قاعدة المعرفة تجمع مقالات وإجابات جاهزة يمكن للفريق أو العميل الرجوع إليها لتقليل الأسئلة المتكررة.</p></div><figure><img src='file:///Users/mabrouk/Documents/GitHub/pos-erp/main-file/docs/screenshots/40-knowledge-base.jpg' alt='قاعدة المعرفة'><figcaption>قاعدة المعرفة</figcaption></figure></section>
+<section class="shot-page"><div class="shot-header"><div class="category">الدعم والعقود والتنظيم</div><h1>العقود</h1></div><div class="explanation"><p>العقود تحفظ الاتفاقيات مع العملاء أو الموردين، مع القيمة، التاريخ، الحالة والملفات المرتبطة.</p></div><figure><img src='file:///Users/mabrouk/Documents/GitHub/pos-erp/main-file/docs/screenshots/41-contracts.jpg' alt='العقود'><figcaption>العقود</figcaption></figure></section>
+<section class="shot-page"><div class="shot-header"><div class="category">الدعم والعقود والتنظيم</div><h1>التقويم</h1></div><div class="explanation"><p>التقويم يعطي عرضا زمنيا للمواعيد، المهام والأحداث المهمة داخل الشركة.</p></div><figure><img src='file:///Users/mabrouk/Documents/GitHub/pos-erp/main-file/docs/screenshots/42-calendar.jpg' alt='التقويم'><figcaption>التقويم</figcaption></figure></section>
+<section class="shot-page"><div class="shot-header"><div class="category">الدعم والعقود والتنظيم</div><h1>جدول المواعيد</h1></div><div class="explanation"><p>جدول المواعيد يساعد في تنظيم الأعمال اليومية أو مواعيد الفريق حسب الوقت والتاريخ.</p></div><figure><img src='file:///Users/mabrouk/Documents/GitHub/pos-erp/main-file/docs/screenshots/43-timesheet.jpg' alt='جدول المواعيد'><figcaption>جدول المواعيد</figcaption></figure></section>
+<section class="shot-page"><div class="shot-header"><div class="category">الدعم والعقود والتنظيم</div><h1>الأهداف</h1></div><div class="explanation"><p>الأهداف تسمح للإدارة بتحديد أهداف قابلة للقياس، مثل رقم مبيعات شهري أو عدد زيارات تجارية.</p></div><figure><img src='file:///Users/mabrouk/Documents/GitHub/pos-erp/main-file/docs/screenshots/44-goals.jpg' alt='الأهداف'><figcaption>الأهداف</figcaption></figure></section>
+<section class="shot-page"><div class="shot-header"><div class="category">الدعم والعقود والتنظيم</div><h1>مخطط الميزانية</h1></div><div class="explanation"><p>مخطط الميزانية يساعد في وضع ميزانيات للأقسام أو المشاريع ومقارنتها بالصرف الفعلي.</p></div><figure><img src='file:///Users/mabrouk/Documents/GitHub/pos-erp/main-file/docs/screenshots/45-budget.jpg' alt='مخطط الميزانية'><figcaption>مخطط الميزانية</figcaption></figure></section>
+<section class="shot-page"><div class="shot-header"><div class="category">أدوات إضافية وإعدادات</div><h1>برنامج بناء النماذج</h1></div><div class="explanation"><p>برنامج بناء النماذج يسمح بإنشاء نماذج مخصصة لجمع معلومات من العملاء أو الموظفين بدون برمجة.</p></div><figure><img src='file:///Users/mabrouk/Documents/GitHub/pos-erp/main-file/docs/screenshots/47-form-builder.jpg' alt='برنامج بناء النماذج'><figcaption>برنامج بناء النماذج</figcaption></figure></section>
+<section class="shot-page"><div class="shot-header"><div class="category">أدوات إضافية وإعدادات</div><h1>مكتبة الوسائط</h1></div><div class="explanation"><p>مكتبة الوسائط تحفظ الملفات والصور والمستندات المستعملة داخل النظام، مثل شعارات أو مرفقات.</p></div><figure><img src='file:///Users/mabrouk/Documents/GitHub/pos-erp/main-file/docs/screenshots/49-media-library.jpg' alt='مكتبة الوسائط'><figcaption>مكتبة الوسائط</figcaption></figure></section>
+<section class="shot-page"><div class="shot-header"><div class="category">أدوات إضافية وإعدادات</div><h1>الإعدادات</h1></div><div class="explanation"><p>الإعدادات هي مركز التحكم في معلومات الشركة، اللغة، العملة، القوالب، البريد وباقي تهيئة النظام.</p></div><figure><img src='file:///Users/mabrouk/Documents/GitHub/pos-erp/main-file/docs/screenshots/50-settings.jpg' alt='الإعدادات'><figcaption>الإعدادات</figcaption></figure></section>
+</body>
+</html>
