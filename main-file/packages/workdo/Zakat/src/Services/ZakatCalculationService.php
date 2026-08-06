@@ -342,13 +342,20 @@ class ZakatCalculationService
             - $summary['manual_deductions_amount'];
 
         $zakatable = max(0, $this->money($zakatable));
-        $isNisabMet = $payload['nisab_amount'] > 0 && $zakatable >= (float) $payload['nisab_amount'];
+
+        // A nisab of 0 means the company has not configured one yet, which is
+        // a different situation from a base that genuinely falls short of it.
+        // Both leave is_nisab_met false, so expose the distinction separately
+        // rather than letting the UI report "below nisab" for an unset value.
+        $isNisabConfigured = (float) $payload['nisab_amount'] > 0;
+        $isNisabMet = $isNisabConfigured && $zakatable >= (float) $payload['nisab_amount'];
         $isHaulMet = Carbon::parse($payload['haul_start_date'])->lte(Carbon::parse($payload['calculation_date'])->subDays(354));
         $zakatDue = ($isNisabMet && $isHaulMet) ? $this->money($zakatable * ((float) $payload['rate_percent'] / 100)) : 0;
 
         return array_merge($summary, [
             'zakatable_amount' => $zakatable,
             'zakat_due' => $zakatDue,
+            'is_nisab_configured' => $isNisabConfigured,
             'is_nisab_met' => $isNisabMet,
             'is_haul_met' => $isHaulMet,
         ]);

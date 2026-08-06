@@ -1,4 +1,4 @@
-import { FormEvent, useState } from 'react';
+import { FormEvent, useRef, useState } from 'react';
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import { useTranslation } from 'react-i18next';
 import AuthenticatedLayout from '@/layouts/authenticated-layout';
@@ -7,10 +7,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Banknote, Boxes, Calculator, CircleDollarSign, FileText, HandCoins, Info, ListChecks, Plus, ShieldCheck, Trash2 } from 'lucide-react';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { KpiCard, KpiRow, EmptyState, ScrollX, Num } from '@/components/ui/page-kit';
+import {
+    Banknote, Boxes, Calculator, ChevronDown, CircleDollarSign, FileText, HandCoins,
+    ListChecks, Plus, ShieldCheck, Trash2, TriangleAlert, ArrowLeft,
+} from 'lucide-react';
 import { formatCurrency, formatDate } from '@/utils/helpers';
 
 type ZakatSettings = {
@@ -62,12 +67,44 @@ const today = new Date().toISOString().slice(0, 10);
 
 export default function Index() {
     const { t } = useTranslation();
-    const { settings, preview, calculations, guidance } = usePage<Props>().props;
+    const page = usePage<Props>();
+    const { settings, preview, calculations, guidance } = page.props;
     const summary = preview.summary || {};
+
+    // formatCurrency falls back to usePage() for company settings when it is
+    // not given pageProps, so an unguarded call inside a conditional branch
+    // changes this component's hook count between renders. Passing page.props
+    // keeps the call hook-free and the order stable.
+    const money = (value: unknown) => formatCurrency(Number(value ?? 0), page.props);
+
     const zakatableAmount = Number(summary.zakatable_amount || 0);
     const zakatDue = Number(summary.zakat_due || 0);
     const nisabAmount = Number(preview.payload?.nisab_amount || 0);
+
+    // A nisab of 0 is "not configured yet", which the service reports separately
+    // from a base that genuinely falls below a configured threshold.
+    const nisabConfigured = summary.is_nisab_configured ?? nisabAmount > 0;
     const isReady = Boolean(summary.is_nisab_met && summary.is_haul_met);
+
+    const heroBadge: { variant: 'destructive' | 'default' | 'secondary'; label: string } = !nisabConfigured
+        ? { variant: 'destructive', label: t('Nisab Not Set') }
+        : isReady
+            ? { variant: 'default', label: t('Ready for zakat') }
+            : { variant: 'secondary', label: t('Needs review') };
+
+    // Resolved as data so the badge is one stable element across all states.
+    const nisabBadge: { variant: 'destructive' | 'default' | 'secondary'; label: string } = !nisabConfigured
+        ? { variant: 'destructive', label: t('Nisab Not Set') }
+        : summary.is_nisab_met
+            ? { variant: 'default', label: t('Nisab Met') }
+            : { variant: 'secondary', label: t('Below Nisab') };
+
+    const nisabFieldRef = useRef<HTMLInputElement>(null);
+
+    const focusNisab = () => {
+        nisabFieldRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        nisabFieldRef.current?.focus();
+    };
 
     const [settingsForm, setSettingsForm] = useState({
         nisab_amount: String(settings.nisab_amount ?? 0),
@@ -90,7 +127,10 @@ export default function Index() {
         notes: '',
     });
 
+    // Off by default: the calculation inherits the saved settings shown above it.
+    const [overrideSettings, setOverrideSettings] = useState(false);
     const [adjustments, setAdjustments] = useState<Adjustment[]>([]);
+    const [guidanceOpen, setGuidanceOpen] = useState(false);
 
     const updateSettings = (event: FormEvent) => {
         event.preventDefault();
@@ -102,8 +142,21 @@ export default function Index() {
 
     const createCalculation = (event: FormEvent) => {
         event.preventDefault();
+        // When not overriding, submit the saved settings so the payload shape -
+        // and the backend's per-snapshot override support - stays unchanged.
+        const overrides = overrideSettings ? {
+            haul_start_date: calculationForm.haul_start_date,
+            nisab_amount: calculationForm.nisab_amount,
+            rate_percent: calculationForm.rate_percent,
+        } : {
+            haul_start_date: settingsForm.haul_start_date,
+            nisab_amount: settingsForm.nisab_amount,
+            rate_percent: settingsForm.rate_percent,
+        };
+
         router.post(route('zakat.calculations.store'), {
             ...calculationForm,
+            ...overrides,
             adjustments,
         });
     };
@@ -120,28 +173,6 @@ export default function Index() {
         setAdjustments(adjustments.filter((_, currentIndex) => currentIndex !== index));
     };
 
-    const SummaryCard = ({ title, value, help, icon: Icon, tone }: { title: string; value: any; help: string; icon: any; tone: string }) => (
-        <Card className="overflow-hidden border-border/70 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
-            <CardContent className="p-4">
-                <div className="flex items-center justify-between gap-3">
-                    <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${tone}`}>
-                        <Icon className="h-5 w-5" />
-                    </div>
-                    <TooltipProvider>
-                        <Tooltip>
-                            <TooltipTrigger type="button" className="inline-flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground transition hover:bg-muted">
-                                <Info className="h-4 w-4 text-muted-foreground" />
-                            </TooltipTrigger>
-                            <TooltipContent className="max-w-xs">{help}</TooltipContent>
-                        </Tooltip>
-                    </TooltipProvider>
-                </div>
-                <p className="mt-4 text-sm font-medium text-muted-foreground">{title}</p>
-                <p className="mt-1 text-2xl font-semibold tabular-nums tracking-tight">{formatCurrency(value || 0)}</p>
-            </CardContent>
-        </Card>
-    );
-
     return (
         <AuthenticatedLayout
             breadcrumbs={[{ label: t('Zakat') }]}
@@ -150,50 +181,72 @@ export default function Index() {
             <Head title={t('Zakat')} />
 
             <div className="mx-auto max-w-7xl space-y-6">
-                <div className="overflow-hidden rounded-xl border bg-gradient-to-br from-emerald-50 via-white to-sky-50 shadow-sm">
-                    <div className="grid gap-6 p-5 lg:grid-cols-[1.25fr_0.75fr] lg:p-6">
-                        <div className="flex items-start gap-4">
-                            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-emerald-600 text-white shadow-sm">
-                                <Calculator className="h-6 w-6" />
-                            </div>
-                            <div className="min-w-0">
-                                <div className="flex flex-wrap items-center gap-2">
-                                    <h2 className="text-2xl font-semibold tracking-tight">{t('Zakat')}</h2>
-                                    <Badge variant={isReady ? 'default' : 'secondary'}>
-                                        {isReady ? t('Ready for zakat') : t('Needs review')}
-                                    </Badge>
-                                </div>
-                                <p className="mt-2 max-w-3xl text-sm leading-6 text-muted-foreground">
-                                    {t('Review the zakatable base, confirm nisab and haul, then create a fixed calculation snapshot with explanations and a downloadable report.')}
-                                </p>
-                            </div>
+                {/* Hero: status and the single next action, no figures - those
+                    live in the result card so each number appears once. */}
+                <div className="overflow-hidden rounded-xl border bg-gradient-to-br from-emerald-50 via-white to-sky-50 dark:from-emerald-500/10 dark:via-card dark:to-sky-500/10">
+                    <div className="flex flex-wrap items-start gap-4 p-5 lg:p-6">
+                        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-emerald-600 text-white">
+                            <Calculator className="h-6 w-6" />
                         </div>
-                        <div className="grid grid-cols-3 gap-3 rounded-xl border bg-white/80 p-3 backdrop-blur">
-                            <div>
-                                <p className="text-xs text-muted-foreground">{t('Base')}</p>
-                                <p className="mt-1 text-sm font-semibold tabular-nums">{formatCurrency(zakatableAmount)}</p>
+                        <div className="min-w-0 flex-1">
+                            <div className="flex flex-wrap items-center gap-2">
+                                <h2 className="text-2xl font-semibold tracking-tight text-foreground">{t('Zakat')}</h2>
+                                <Badge variant={heroBadge.variant}>{heroBadge.label}</Badge>
                             </div>
-                            <div>
-                                <p className="text-xs text-muted-foreground">{t('Nisab')}</p>
-                                <p className="mt-1 text-sm font-semibold tabular-nums">{formatCurrency(nisabAmount)}</p>
-                            </div>
-                            <div>
-                                <p className="text-xs text-muted-foreground">{t('Due')}</p>
-                                <p className="mt-1 text-sm font-semibold tabular-nums">{formatCurrency(zakatDue)}</p>
+                            <p className="mt-2 max-w-3xl text-sm leading-6 text-muted-foreground">
+                                {t('Review the zakatable base, confirm nisab and haul, then create a fixed calculation snapshot with explanations and a downloadable report.')}
+                            </p>
+
+                            {/* The one thing blocking a real calculation. Hidden rather
+                                than unmounted so the element tree stays constant. */}
+                            <div
+                                className={`mt-4 flex-wrap items-center gap-3 rounded-lg border border-amber-300 bg-amber-50 p-3 text-amber-900 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200 ${nisabConfigured ? 'hidden' : 'flex'}`}
+                            >
+                                <TriangleAlert className="h-4 w-4 shrink-0" />
+                                <span className="text-sm">{t('Set a nisab value to enable the zakat calculation.')}</span>
+                                <Button type="button" size="sm" variant="outline" onClick={focusNisab}>
+                                    {t('Set nisab')}
+                                </Button>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <div className="grid grid-cols-1 gap-4 lg:grid-cols-4">
-                    <SummaryCard title={t('Cash and Bank')} value={summary.cash_amount} help={t('Positive active bank balances are included as zakatable cash.')} icon={Banknote} tone="bg-emerald-50 text-emerald-700" />
-                    <SummaryCard title={t('Trade Inventory')} value={summary.inventory_amount} help={t('Inventory prepared for sale is valued using the selected sale or purchase price policy.')} icon={Boxes} tone="bg-sky-50 text-sky-700" />
-                    <SummaryCard title={t('Customer Debts')} value={summary.receivable_amount} help={t('Collectible posted customer invoice balances are included.')} icon={CircleDollarSign} tone="bg-indigo-50 text-indigo-700" />
-                    <SummaryCard title={t('Deductible Credit')} value={summary.deductible_liabilities_amount} help={t('Supplier credit due within the selected liability window is deducted.')} icon={HandCoins} tone="bg-amber-50 text-amber-700" />
-                </div>
+                {/* Asset breakdown. */}
+                <KpiRow cols={4}>
+                    <KpiCard
+                        label={t('Cash and Bank')}
+                        value={money(summary.cash_amount)}
+                        icon={<Banknote className="h-5 w-5" />}
+                        tone="green"
+                        hint={t('Positive active bank balances are included as zakatable cash.')}
+                    />
+                    <KpiCard
+                        label={t('Trade Inventory')}
+                        value={money(summary.inventory_amount)}
+                        icon={<Boxes className="h-5 w-5" />}
+                        tone="blue"
+                        hint={t('Inventory prepared for sale is valued using the selected sale or purchase price policy.')}
+                    />
+                    <KpiCard
+                        label={t('Customer Debts')}
+                        value={money(summary.receivable_amount)}
+                        icon={<CircleDollarSign className="h-5 w-5" />}
+                        tone="blue"
+                        hint={t('Collectible posted customer invoice balances are included.')}
+                    />
+                    <KpiCard
+                        label={t('Deductible Credit')}
+                        value={money(summary.deductible_liabilities_amount)}
+                        icon={<HandCoins className="h-5 w-5" />}
+                        tone="orange"
+                        hint={t('Supplier credit due within the selected liability window is deducted.')}
+                    />
+                </KpiRow>
 
-                <Card className="overflow-hidden border-border/70 shadow-sm">
-                    <CardHeader className="pb-3">
+                {/* The single result surface: base -> due. */}
+                <Card>
+                    <CardHeader className="border-b">
                         <div className="flex items-center gap-3">
                             <div className="flex h-10 w-10 items-center justify-center rounded-lg border bg-primary/10">
                                 <Calculator className="h-5 w-5 text-primary" />
@@ -206,81 +259,107 @@ export default function Index() {
                             </div>
                         </div>
                     </CardHeader>
-                    <CardContent>
-                        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <CardContent className="pt-4">
+                        <div className="flex flex-wrap items-center gap-x-8 gap-y-4">
                             <div>
                                 <p className="text-sm text-muted-foreground">{t('Zakatable Base')}</p>
-                                <p className="text-xl font-semibold tabular-nums">{formatCurrency(summary.zakatable_amount || 0)}</p>
+                                <p className="text-2xl font-semibold tabular-nums">
+                                    <Num>{money(zakatableAmount)}</Num>
+                                </p>
                             </div>
-                            <div>
-                                <p className="text-sm text-muted-foreground">{t('Nisab')}</p>
-                                <p className="text-xl font-semibold tabular-nums">{formatCurrency(preview.payload?.nisab_amount || 0)}</p>
-                            </div>
-                            <div>
-                                <p className="text-sm text-muted-foreground">{t('Eligibility')}</p>
-                                <div className="mt-1 flex flex-wrap gap-2">
-                                    <Badge variant={summary.is_nisab_met ? 'default' : 'secondary'}>{summary.is_nisab_met ? t('Nisab Met') : t('Below Nisab')}</Badge>
-                                    <Badge variant={summary.is_haul_met ? 'default' : 'secondary'}>{summary.is_haul_met ? t('Haul Met') : t('Haul Not Met')}</Badge>
-                                </div>
-                            </div>
+
+                            <ArrowLeft className="hidden h-5 w-5 shrink-0 text-muted-foreground ltr:rotate-180 sm:block" />
+
                             <div>
                                 <p className="text-sm text-muted-foreground">{t('Zakat Due')}</p>
-                                <p className="text-xl font-semibold tabular-nums">{formatCurrency(summary.zakat_due || 0)}</p>
+                                <p className="text-2xl font-semibold tabular-nums text-primary">
+                                    <Num>{money(zakatDue)}</Num>
+                                </p>
+                            </div>
+
+                            <div className="ms-auto">
+                                <p className="text-sm text-muted-foreground">{t('Eligibility')}</p>
+                                {/* Keep the same element tree in every state - swapping
+                                    props rather than mounting/unmounting avoids shifting
+                                    sibling hook order when nisab becomes configured. */}
+                                <div className="mt-1 flex flex-wrap gap-2">
+                                    <Badge variant={nisabBadge.variant}>{nisabBadge.label}</Badge>
+                                    <Badge variant={summary.is_haul_met ? 'default' : 'secondary'}>
+                                        {summary.is_haul_met ? t('Haul Met') : t('Haul Not Met')}
+                                    </Badge>
+                                    <span className="self-center text-xs text-muted-foreground">
+                                        {nisabConfigured ? <>{t('Nisab')}: <Num>{money(nisabAmount)}</Num></> : null}
+                                    </span>
+                                </div>
                             </div>
                         </div>
                     </CardContent>
                 </Card>
 
+                {/* Guidance: long-form reference, collapsed until asked for. */}
                 {settings.show_guidance && (
-                    <Card className="overflow-hidden border-border/70 shadow-sm">
-                        <CardHeader>
-                            <div className="flex items-center gap-3">
-                                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-slate-100 text-slate-700">
+                    <Collapsible open={guidanceOpen} onOpenChange={setGuidanceOpen}>
+                        <Card>
+                            <CollapsibleTrigger className="flex w-full items-center gap-3 p-4 text-start">
+                                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground">
                                     <ShieldCheck className="h-5 w-5" />
                                 </div>
-                                <div>
+                                <div className="min-w-0 flex-1">
                                     <CardTitle className="text-xl">{t('Instructions and Explanations')}</CardTitle>
-                                    <CardDescription>{t('Clear accounting guidance for what enters, what stays out, and what can be deducted.')}</CardDescription>
+                                    <CardDescription>
+                                        {t('Clear accounting guidance for what enters, what stays out, and what can be deducted.')}
+                                    </CardDescription>
                                 </div>
-                            </div>
-                        </CardHeader>
-                        <CardContent>
-                            <ScrollArea className="h-[360px] rounded-lg border bg-muted/10 p-1 md:h-auto">
-                                <div className="grid grid-cols-1 gap-4 p-3 md:grid-cols-2">
-                                    {guidance.map((item) => (
-                                        <div key={item.title} className="rounded-lg border bg-white p-4">
-                                            <h3 className="font-semibold">{t(item.title)}</h3>
-                                            <p className="mt-1 text-sm leading-6 text-muted-foreground">{t(item.body)}</p>
-                                        </div>
-                                    ))}
-                                    <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-amber-950 md:col-span-2">
-                                        <div className="flex items-start gap-3">
-                                            <ListChecks className="mt-0.5 h-5 w-5 shrink-0" />
-                                            <div>
-                                                <h3 className="font-semibold">{t('Workflow')}</h3>
-                                                <p className="mt-1 text-sm leading-6">
-                                                    {t('Enter nisab and haul, review zakatable assets, review credit deductions, add manual adjustments with reasons, finalize the calculation, then download the report or record payment.')}
-                                                </p>
+                                <span className="flex shrink-0 items-center gap-1.5 text-sm text-muted-foreground">
+                                    {guidanceOpen ? t('Hide guidance') : t('Show guidance')}
+                                    <ChevronDown className={`h-4 w-4 transition-transform ${guidanceOpen ? 'rotate-180' : ''}`} />
+                                </span>
+                            </CollapsibleTrigger>
+
+                            <CollapsibleContent>
+                                <CardContent className="border-t pt-4">
+                                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                                        {guidance.map((item) => (
+                                            <div key={item.title} className="rounded-lg border bg-muted/30 p-4">
+                                                <h3 className="font-semibold text-foreground">{t(item.title)}</h3>
+                                                <p className="mt-1 text-sm leading-6 text-muted-foreground">{t(item.body)}</p>
+                                            </div>
+                                        ))}
+                                        <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-amber-950 md:col-span-2 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-100">
+                                            <div className="flex items-start gap-3">
+                                                <ListChecks className="mt-0.5 h-5 w-5 shrink-0" />
+                                                <div>
+                                                    <h3 className="font-semibold">{t('Workflow')}</h3>
+                                                    <p className="mt-1 text-sm leading-6">
+                                                        {t('Enter nisab and haul, review zakatable assets, review credit deductions, add manual adjustments with reasons, finalize the calculation, then download the report or record payment.')}
+                                                    </p>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
-                                </div>
-                            </ScrollArea>
-                        </CardContent>
-                    </Card>
+                                </CardContent>
+                            </CollapsibleContent>
+                        </Card>
+                    </Collapsible>
                 )}
 
-                <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-                    <Card className="border-border/70 shadow-sm">
+                <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
+                    <Card>
                         <CardHeader>
                             <CardTitle className="text-xl">{t('Zakat Settings')}</CardTitle>
                             <CardDescription>{t('Set the default nisab, haul, valuation method, and deduction policy for future calculations.')}</CardDescription>
                         </CardHeader>
                         <CardContent>
-                            <form onSubmit={updateSettings} className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <form onSubmit={updateSettings} className="grid grid-cols-1 gap-4 md:grid-cols-2">
                                 <div>
                                     <Label>{t('Nisab Amount')}</Label>
-                                    <Input type="number" step="0.01" value={settingsForm.nisab_amount} onChange={(event) => setSettingsForm({ ...settingsForm, nisab_amount: event.target.value })} />
+                                    <Input
+                                        ref={nisabFieldRef}
+                                        type="number"
+                                        step="0.01"
+                                        value={settingsForm.nisab_amount}
+                                        onChange={(event) => setSettingsForm({ ...settingsForm, nisab_amount: event.target.value })}
+                                    />
                                 </div>
                                 <div>
                                     <Label>{t('Zakat Rate')}</Label>
@@ -292,7 +371,7 @@ export default function Index() {
                                 </div>
                                 <div>
                                     <Label>{t('Inventory Valuation')}</Label>
-                                    <select className="w-full h-10 rounded-md border px-3 text-sm" value={settingsForm.inventory_valuation_method} onChange={(event) => setSettingsForm({ ...settingsForm, inventory_valuation_method: event.target.value })}>
+                                    <select className="h-10 w-full rounded-md border bg-background px-3 text-sm" value={settingsForm.inventory_valuation_method} onChange={(event) => setSettingsForm({ ...settingsForm, inventory_valuation_method: event.target.value })}>
                                         <option value="sale_price">{t('Sale Price')}</option>
                                         <option value="purchase_price">{t('Purchase Price')}</option>
                                     </select>
@@ -303,13 +382,13 @@ export default function Index() {
                                 </div>
                                 <div>
                                     <Label>{t('Customer Debt Policy')}</Label>
-                                    <select className="w-full h-10 rounded-md border px-3 text-sm" value={settingsForm.receivable_policy} onChange={(event) => setSettingsForm({ ...settingsForm, receivable_policy: event.target.value })}>
+                                    <select className="h-10 w-full rounded-md border bg-background px-3 text-sm" value={settingsForm.receivable_policy} onChange={(event) => setSettingsForm({ ...settingsForm, receivable_policy: event.target.value })}>
                                         <option value="collectible">{t('Collectible Receivables')}</option>
                                         <option value="all">{t('All Receivables')}</option>
                                         <option value="paid_only">{t('Paid Only')}</option>
                                     </select>
                                 </div>
-                                <label className="md:col-span-2 flex items-center gap-2 text-sm">
+                                <label className="flex items-center gap-2 text-sm md:col-span-2">
                                     <input type="checkbox" checked={settingsForm.show_guidance} onChange={(event) => setSettingsForm({ ...settingsForm, show_guidance: event.target.checked })} />
                                     {t('Show guidance and explanations')}
                                 </label>
@@ -320,30 +399,54 @@ export default function Index() {
                         </CardContent>
                     </Card>
 
-                    <Card className="border-border/70 shadow-sm">
+                    <Card>
                         <CardHeader>
                             <CardTitle className="text-xl">{t('Create Zakat Calculation')}</CardTitle>
                             <CardDescription>{t('Create a dated snapshot after reviewing the current assets, credit, and manual adjustments.')}</CardDescription>
                         </CardHeader>
                         <CardContent>
                             <form onSubmit={createCalculation} className="space-y-4">
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <div>
-                                        <Label>{t('Calculation Date')}</Label>
-                                        <Input type="date" value={calculationForm.calculation_date} onChange={(event) => setCalculationForm({ ...calculationForm, calculation_date: event.target.value })} />
+                                <div>
+                                    <Label>{t('Calculation Date')}</Label>
+                                    <Input type="date" value={calculationForm.calculation_date} onChange={(event) => setCalculationForm({ ...calculationForm, calculation_date: event.target.value })} />
+                                </div>
+
+                                {/* Inherit from settings by default; reveal the fields only
+                                    when the user explicitly wants a one-off override. */}
+                                <div className="rounded-lg border bg-muted/30 p-3">
+                                    <div className="flex flex-wrap items-center justify-between gap-2">
+                                        <div className="min-w-0">
+                                            <p className="text-sm font-medium">{t('Override for this calculation')}</p>
+                                            {!overrideSettings && (
+                                                <p className="mt-0.5 text-xs text-muted-foreground">
+                                                    {t('Using saved settings')} — {t('Nisab')}{' '}
+                                                    <Num>{money(settingsForm.nisab_amount)}</Num>
+                                                    {' · '}{t('Zakat Rate')} <Num>{settingsForm.rate_percent}%</Num>
+                                                    {settingsForm.haul_start_date && (
+                                                        <>{' · '}{t('Haul from')} <Num>{formatDate(settingsForm.haul_start_date)}</Num></>
+                                                    )}
+                                                </p>
+                                            )}
+                                        </div>
+                                        <Switch checked={overrideSettings} onCheckedChange={setOverrideSettings} />
                                     </div>
-                                    <div>
-                                        <Label>{t('Haul Start Date')}</Label>
-                                        <Input type="date" value={calculationForm.haul_start_date} onChange={(event) => setCalculationForm({ ...calculationForm, haul_start_date: event.target.value })} />
-                                    </div>
-                                    <div>
-                                        <Label>{t('Nisab Amount')}</Label>
-                                        <Input type="number" step="0.01" value={calculationForm.nisab_amount} onChange={(event) => setCalculationForm({ ...calculationForm, nisab_amount: event.target.value })} />
-                                    </div>
-                                    <div>
-                                        <Label>{t('Zakat Rate')}</Label>
-                                        <Input type="number" step="0.01" value={calculationForm.rate_percent} onChange={(event) => setCalculationForm({ ...calculationForm, rate_percent: event.target.value })} />
-                                    </div>
+
+                                    {overrideSettings && (
+                                        <div className="mt-3 grid grid-cols-1 gap-3 md:grid-cols-3">
+                                            <div>
+                                                <Label>{t('Nisab Amount')}</Label>
+                                                <Input type="number" step="0.01" value={calculationForm.nisab_amount} onChange={(event) => setCalculationForm({ ...calculationForm, nisab_amount: event.target.value })} />
+                                            </div>
+                                            <div>
+                                                <Label>{t('Zakat Rate')}</Label>
+                                                <Input type="number" step="0.01" value={calculationForm.rate_percent} onChange={(event) => setCalculationForm({ ...calculationForm, rate_percent: event.target.value })} />
+                                            </div>
+                                            <div>
+                                                <Label>{t('Haul Start Date')}</Label>
+                                                <Input type="date" value={calculationForm.haul_start_date} onChange={(event) => setCalculationForm({ ...calculationForm, haul_start_date: event.target.value })} />
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
 
                                 <div>
@@ -355,14 +458,14 @@ export default function Index() {
                                     <div className="flex items-center justify-between">
                                         <Label>{t('Manual Adjustments')}</Label>
                                         <Button type="button" variant="outline" size="sm" onClick={addAdjustment}>
-                                            <Plus className="h-4 w-4 mr-2" />
+                                            <Plus className="h-4 w-4 me-2" />
                                             {t('Add Adjustment')}
                                         </Button>
                                     </div>
                                     <ScrollArea className={adjustments.length > 2 ? 'h-[250px] rounded-lg border' : ''}>
                                         <div className={adjustments.length > 2 ? 'space-y-3 p-3' : 'space-y-3'}>
                                             {adjustments.map((adjustment, index) => (
-                                                <div key={index} className="grid grid-cols-1 gap-3 rounded-lg border bg-muted/10 p-3 md:grid-cols-12">
+                                                <div key={index} className="grid grid-cols-1 gap-3 rounded-lg border bg-muted/30 p-3 md:grid-cols-12">
                                                     <select className="h-10 rounded-md border bg-background px-3 text-sm md:col-span-2" value={adjustment.adjustment_type} onChange={(event) => updateAdjustment(index, 'adjustment_type', event.target.value)}>
                                                         <option value="addition">{t('Addition')}</option>
                                                         <option value="deduction">{t('Deduction')}</option>
@@ -381,7 +484,7 @@ export default function Index() {
                                 </div>
 
                                 <Button type="submit">
-                                    <Calculator className="h-4 w-4 mr-2" />
+                                    <Calculator className="h-4 w-4 me-2" />
                                     {t('Create Calculation')}
                                 </Button>
                             </form>
@@ -389,60 +492,64 @@ export default function Index() {
                     </Card>
                 </div>
 
-                <Card className="overflow-hidden border-border/70 shadow-sm">
+                <Card className="overflow-hidden">
                     <CardHeader>
                         <CardTitle className="text-xl">{t('Recent Zakat Calculations')}</CardTitle>
                         <CardDescription>{t('A scrollable audit list of created zakat snapshots and reports.')}</CardDescription>
                     </CardHeader>
                     <CardContent className="p-0">
-                        <ScrollArea className="max-h-[360px]">
-                            <div className="overflow-x-auto">
-                        <table className="w-full min-w-[920px] text-sm">
-                            <thead className="sticky top-0 z-10 bg-muted/90 backdrop-blur">
-                                <tr>
-                                    <th className="text-left p-3">{t('Number')}</th>
-                                    <th className="text-left p-3">{t('Date')}</th>
-                                    <th className="text-right p-3">{t('Zakatable Base')}</th>
-                                    <th className="text-right p-3">{t('Zakat Due')}</th>
-                                    <th className="text-right p-3">{t('Remaining')}</th>
-                                    <th className="text-left p-3">{t('Status')}</th>
-                                    <th className="text-right p-3">{t('Actions')}</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {calculations.length > 0 ? calculations.map((calculation) => (
-                                    <tr key={calculation.id} className="border-t">
-                                        <td className="p-3 font-medium">{calculation.calculation_number}</td>
-                                        <td className="p-3">{formatDate(calculation.calculation_date)}</td>
-                                        <td className="p-3 text-right tabular-nums">{formatCurrency(calculation.zakatable_amount)}</td>
-                                        <td className="p-3 text-right tabular-nums">{formatCurrency(calculation.zakat_due)}</td>
-                                        <td className="p-3 text-right tabular-nums">{formatCurrency(calculation.remaining_amount)}</td>
-                                        <td className="p-3">
-                                            <Badge variant={calculation.status === 'finalized' ? 'default' : 'secondary'}>{t(calculation.status)}</Badge>
-                                        </td>
-                                        <td className="p-3 text-right">
-                                            <div className="flex justify-end gap-2">
-                                                <Button variant="outline" size="sm" asChild>
-                                                    <Link href={route('zakat.calculations.show', calculation.id)}>{t('View')}</Link>
-                                                </Button>
-                                                {calculation.status === 'finalized' && (
-                                                    <Button variant="outline" size="sm" onClick={() => window.open(route('zakat.calculations.report', calculation.id) + '?download=pdf', '_blank')}>
-                                                        <FileText className="h-4 w-4 mr-2" />
-                                                        {t('Download Report')}
-                                                    </Button>
-                                                )}
-                                            </div>
-                                        </td>
-                                    </tr>
-                                )) : (
-                                    <tr>
-                                        <td className="p-8 text-center text-muted-foreground" colSpan={7}>{t('No zakat calculations yet')}</td>
-                                    </tr>
-                                )}
-                            </tbody>
-                        </table>
-                            </div>
-                        </ScrollArea>
+                        {calculations.length === 0 ? (
+                            <EmptyState
+                                icon={<FileText className="h-10 w-10" />}
+                                title={t('No zakat calculations yet')}
+                                description={t('Create a dated snapshot after reviewing the current assets, credit, and manual adjustments.')}
+                            />
+                        ) : (
+                            <ScrollArea className="max-h-[360px]">
+                                <ScrollX>
+                                    <table className="w-full min-w-[920px] text-sm">
+                                        <thead className="sticky top-0 z-10 bg-muted/90 backdrop-blur">
+                                            <tr>
+                                                <th className="p-3 text-start">{t('Number')}</th>
+                                                <th className="p-3 text-start">{t('Date')}</th>
+                                                <th className="p-3 text-end">{t('Zakatable Base')}</th>
+                                                <th className="p-3 text-end">{t('Zakat Due')}</th>
+                                                <th className="p-3 text-end">{t('Remaining')}</th>
+                                                <th className="p-3 text-start">{t('Status')}</th>
+                                                <th className="p-3 text-end">{t('Actions')}</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {calculations.map((calculation) => (
+                                                <tr key={calculation.id} className="border-t">
+                                                    <td className="p-3 font-medium">{calculation.calculation_number}</td>
+                                                    <td className="p-3"><Num>{formatDate(calculation.calculation_date)}</Num></td>
+                                                    <td className="p-3 text-end tabular-nums"><Num>{money(calculation.zakatable_amount)}</Num></td>
+                                                    <td className="p-3 text-end tabular-nums"><Num>{money(calculation.zakat_due)}</Num></td>
+                                                    <td className="p-3 text-end tabular-nums"><Num>{money(calculation.remaining_amount)}</Num></td>
+                                                    <td className="p-3">
+                                                        <Badge variant={calculation.status === 'finalized' ? 'default' : 'secondary'}>{t(calculation.status)}</Badge>
+                                                    </td>
+                                                    <td className="p-3 text-end">
+                                                        <div className="flex justify-end gap-2">
+                                                            <Button variant="outline" size="sm" asChild>
+                                                                <Link href={route('zakat.calculations.show', calculation.id)}>{t('View')}</Link>
+                                                            </Button>
+                                                            {calculation.status === 'finalized' && (
+                                                                <Button variant="outline" size="sm" onClick={() => window.open(route('zakat.calculations.report', calculation.id) + '?download=pdf', '_blank')}>
+                                                                    <FileText className="h-4 w-4 me-2" />
+                                                                    {t('Download Report')}
+                                                                </Button>
+                                                            )}
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </ScrollX>
+                            </ScrollArea>
+                        )}
                     </CardContent>
                 </Card>
             </div>

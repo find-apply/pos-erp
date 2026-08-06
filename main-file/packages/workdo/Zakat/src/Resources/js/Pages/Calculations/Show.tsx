@@ -226,23 +226,23 @@ export default function Show() {
                     </CardHeader>
                     <CardContent>
                         <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
-                            <div className="rounded-lg border bg-white p-4 shadow-sm">
+                            <div className="rounded-lg border bg-card p-4">
                                 <p className="text-sm text-muted-foreground">{t('Assets Before Deductions')}</p>
                                 <p className="text-xl font-semibold tabular-nums">
                                     {formatCurrency(Number(calculation.cash_amount) + Number(calculation.inventory_amount) + Number(calculation.receivable_amount) + Number(calculation.manual_additions_amount))}
                                 </p>
                             </div>
-                            <div className="rounded-lg border bg-white p-4 shadow-sm">
+                            <div className="rounded-lg border bg-card p-4">
                                 <p className="text-sm text-muted-foreground">{t('Deductions')}</p>
                                 <p className="text-xl font-semibold tabular-nums">
                                     {formatCurrency(Number(calculation.deductible_liabilities_amount) + Number(calculation.manual_deductions_amount))}
                                 </p>
                             </div>
-                            <div className="rounded-lg border bg-white p-4 shadow-sm">
+                            <div className="rounded-lg border bg-card p-4">
                                 <p className="text-sm text-muted-foreground">{t('Zakatable Base')}</p>
                                 <p className="text-xl font-semibold tabular-nums">{formatCurrency(calculation.zakatable_amount)}</p>
                             </div>
-                            <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-4 shadow-sm">
+                            <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-4 dark:border-emerald-500/30 dark:bg-emerald-500/10">
                                 <p className="text-sm text-muted-foreground">{t('Zakat Due')}</p>
                                 <p className="text-xl font-semibold tabular-nums">{formatCurrency(calculation.zakat_due)}</p>
                             </div>
@@ -316,15 +316,15 @@ export default function Show() {
                             </CardHeader>
                             <CardContent className="space-y-4">
                                 <div className="grid grid-cols-3 gap-3">
-                                    <div className="rounded-lg border bg-white p-3">
+                                    <div className="rounded-lg border bg-card p-3">
                                         <p className="text-xs text-muted-foreground">{t('Due')}</p>
                                         <p className="font-semibold tabular-nums">{formatCurrency(calculation.zakat_due)}</p>
                                     </div>
-                                    <div className="rounded-lg border bg-white p-3">
+                                    <div className="rounded-lg border bg-card p-3">
                                         <p className="text-xs text-muted-foreground">{t('Paid')}</p>
                                         <p className="font-semibold tabular-nums">{formatCurrency(calculation.paid_amount)}</p>
                                     </div>
-                                    <div className="rounded-lg border bg-white p-3">
+                                    <div className="rounded-lg border bg-card p-3">
                                         <p className="text-xs text-muted-foreground">{t('Remaining')}</p>
                                         <p className="font-semibold tabular-nums">{formatCurrency(calculation.remaining_amount)}</p>
                                     </div>
