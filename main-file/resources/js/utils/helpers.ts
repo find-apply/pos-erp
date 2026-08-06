@@ -1,4 +1,4 @@
-import { usePage } from '@inertiajs/react';
+import { router } from '@inertiajs/react';
 
 // Add window type declaration
 declare global {
@@ -6,6 +6,48 @@ declare global {
     location: Location;
   }
 }
+
+/*
+ * Page props without a hook.
+ *
+ * These helpers are called from deep inside render trees - formatCurrency
+ * alone resolves six settings per call - and they used to fall back to
+ * usePage() when no pageProps argument was given. usePage() is a hook, so a
+ * component calling formatCurrency a varying number of times (inside a
+ * conditional branch, say) changed its own hook count between renders and
+ * tripped React's rules-of-hooks check.
+ *
+ * Inertia's page props are read from the server-rendered data-page attribute
+ * on first paint and refreshed on every client-side navigation, so the cache
+ * stays current without any hook being involved.
+ */
+let cachedPageProps: Record<string, any> | null = null;
+
+const readInitialPageProps = () => {
+  if (typeof document === 'undefined') return;
+  const el = document.getElementById('app') ?? document.querySelector('[data-page]');
+  const raw = el?.getAttribute('data-page');
+  if (!raw) return;
+  try {
+    cachedPageProps = JSON.parse(raw)?.props ?? null;
+  } catch {
+    cachedPageProps = null;
+  }
+};
+
+readInitialPageProps();
+
+if (typeof window !== 'undefined') {
+  router.on('navigate', (event: any) => {
+    cachedPageProps = event?.detail?.page?.props ?? cachedPageProps;
+  });
+}
+
+/** Current Inertia page props, falling back to the DOM if nothing is cached. */
+const currentPageProps = (): Record<string, any> => {
+  if (!cachedPageProps) readInitialPageProps();
+  return cachedPageProps ?? {};
+};
 
 /**
  * Get company setting value
@@ -17,7 +59,7 @@ const getCompanySetting = (key: string, pageProps?: any) => {
     if (pageProps?.companyAllSetting) {
       companySettings = pageProps.companyAllSetting;
     } else {
-      const { props } = usePage();
+      const props = currentPageProps();
       companySettings = (props as any).companyAllSetting || {};
     }
 
@@ -37,7 +79,7 @@ const getAdminSetting = (key: string, pageProps?: any) => {
     if (pageProps?.adminAllSetting) {
       adminSettings = pageProps.adminAllSetting;
     } else {
-      const { props } = usePage();
+      const props = currentPageProps();
       adminSettings = (props as any).adminAllSetting || {};
     }
 
@@ -133,7 +175,7 @@ const getImagePath = (path: string, pageProps?: any): string => {
     if (pageProps?.baseUrl) {
       baseUrl = pageProps.baseUrl;
     } else {
-      const { props } = usePage();
+      const props = currentPageProps();
       baseUrl = (props as any).baseUrl || window.location.origin;
     }
     const cleanPath = path.startsWith('/') ? path : '/' + path;
@@ -145,7 +187,7 @@ const getImagePath = (path: string, pageProps?: any): string => {
     if (pageProps?.imageUrlPrefix) {
       imageUrlPrefix = pageProps.imageUrlPrefix;
     } else {
-      const { props } = usePage();
+      const props = currentPageProps();
       imageUrlPrefix = (props as any).imageUrlPrefix || '';
     }
 
@@ -255,7 +297,7 @@ const isPackageActive = (packageName: string, pageProps?: any): boolean => {
     if (pageProps?.auth?.user?.activatedPackages) {
       activatedPackages = pageProps.auth.user.activatedPackages;
     } else {
-      const { props } = usePage();
+      const props = currentPageProps();
       activatedPackages = (props as any).auth?.user?.activatedPackages || [];
     }
     return activatedPackages.includes(packageName);
@@ -284,7 +326,7 @@ const getPackageFavicon = (packageName: string, pageProps?: any): string | undef
       if (pageProps?.packages) {
         packages = pageProps.packages;
       } else {
-        const { props } = usePage();
+        const props = currentPageProps();
         packages = (props as any).packages || [];
       }
 
@@ -305,7 +347,7 @@ const getPackageAlias = (packageName: string, pageProps?: any): string | undefin
         packages = pageProps.packages;
       } else {
         // Only call usePage if pageProps not provided
-        const { props } = usePage();
+        const props = currentPageProps();
         packages = (props as any).packages || [];
       }
 
@@ -325,7 +367,7 @@ const adminPackages = (pageProps?: any): string[] => {
       if (pageProps?.packages) {
         packages = pageProps.packages;
       } else {
-        const { props } = usePage();
+        const props = currentPageProps();
         packages = (props as any).packages || [];
       }
 
@@ -429,7 +471,7 @@ const getSubscriptionDetails = (userId?: number, pageProps?: any): SubscriptionD
     if (pageProps?.auth?.user) {
       user = pageProps.auth.user;
     } else {
-      const { props } = usePage();
+      const props = currentPageProps();
       user = (props as any).auth?.user;
     }
 
