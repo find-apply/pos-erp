@@ -1,0 +1,13 @@
+{
+    "name": "Production",
+    "alias": "Production",
+    "description": "Recipes (BOM), manufacturing orders, and production loss tracking.",
+    "priority": 235,
+    "version": 1.0,
+    "monthly_price": 0,
+    "yearly_price": 0,
+    "parent_module": [
+        "ProductService"
+    ],
+    "package_name": "production"
+}

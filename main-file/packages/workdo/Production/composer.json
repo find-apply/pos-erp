@@ -1,0 +1,25 @@
+{
+    "name": "workdo/production",
+    "description": "Production and bill-of-materials module",
+    "type": "library",
+    "license": "MIT",
+    "require": {},
+    "autoload": {
+        "psr-4": {
+            "Workdo\\Production\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "WorkDo",
+            "email": "support@workdo.io"
+        }
+    ],
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Workdo\\Production\\Providers\\ProductionServiceProvider"
+            ]
+        }
+    }
+}
