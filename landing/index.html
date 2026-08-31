@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DzERP — نظام إدارة الموارد المصمم للسوق الجزائري</title>
+<meta name="description" content="DzERP نظام ERP و POS متكامل بالعربية: مبيعات، مخازن، محاسبة، توزيع، تتبع أسطول، زكاة وموارد بشرية — بالدينار الجزائري واتجاه RTL.">
+<meta name="theme-color" content="#070b16">
+<meta property="og:title" content="DzERP — نظام إدارة الموارد المصمم للسوق الجزائري">
+<meta property="og:description" content="نظام ERP و POS متكامل بالعربية: مبيعات، مخازن، محاسبة، توزيع، تتبع أسطول، زكاة وموارد بشرية.">
+<meta property="og:type" content="website">
+<meta property="og:image" content="assets/img/dzerp-logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=Cairo:wght@600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/styles.css">
+<link rel="icon" type="image/png" href="assets/img/dzerp-mark.png">
+<link rel="apple-touch-icon" href="assets/img/dzerp-mark.png">
+</head>
+<body>
+
+<div class="scroll-progress" id="progress" aria-hidden="true"></div>
+<a class="skip-link" href="#why" data-i18n="a11y.skip">تخطّي إلى المحتوى</a>
+
+<!-- ════════ الترويسة ════════ -->
+<header class="site-header" id="header">
+  <div class="container header-inner">
+    <a class="brand" href="#top" data-i18n-aria="a11y.home" aria-label="DzERP الصفحة الرئيسية">
+      <span class="brand-mark" aria-hidden="true">
+        <img src="assets/img/dzerp-mark.png" alt="" width="256" height="256" loading="eager">
+      </span>
+      <span class="brand-text">DzERP</span>
+    </a>
+
+    <nav class="nav" id="nav" data-i18n-aria="a11y.mainNav" aria-label="التنقل الرئيسي">
+      <a href="#why" data-i18n="nav.why">لماذا DzERP</a>
+      <a href="#spotlight" data-i18n="nav.spot">ما يميّزنا</a>
+      <a href="#modules" data-i18n="nav.modules">الوحدات</a>
+      <a href="#showcase" data-i18n="nav.shots">لقطات النظام</a>
+      <a href="#how" data-i18n="nav.how">كيف نبدأ</a>
+      <a href="#plans" data-i18n="nav.plans">الباقات</a>
+      <a href="#faq" data-i18n="nav.faq">أسئلة</a>
+    </nav>
+
+    <div class="header-actions">
+      <div class="lang" id="langMenu">
+        <button class="lang-trigger" id="langBtn" type="button" aria-haspopup="true" aria-expanded="false" data-i18n-aria="a11y.lang" aria-label="اللغة">
+          <svg class="lang-globe" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3.3 9h17.4M3.3 15h17.4M12 3a15 15 0 0 1 0 18M12 3a15 15 0 0 0 0 18"/></svg>
+          <span class="lang-code" id="langCode">AR</span>
+          <svg class="lang-caret" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+        </button>
+
+        <div class="lang-pop" id="langPop" role="menu" data-i18n-aria="a11y.langList" aria-label="اختيار اللغة" hidden>
+          <button class="lang-opt is-active" type="button" role="menuitemradio" aria-checked="true" data-lang="ar" lang="ar">
+            <span class="lang-tick" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m5 13 4 4 10-10"/></svg></span>
+            <span class="lang-meta"><span class="lang-name">العربية</span><span class="lang-note">Arabe</span></span>
+            <span class="lang-dir">RTL</span>
+          </button>
+          <button class="lang-opt" type="button" role="menuitemradio" aria-checked="false" data-lang="fr" lang="fr">
+            <span class="lang-tick" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m5 13 4 4 10-10"/></svg></span>
+            <span class="lang-meta"><span class="lang-name">Français</span><span class="lang-note">الفرنسية</span></span>
+            <span class="lang-dir">LTR</span>
+          </button>
+        </div>
+      </div>
+      <button class="icon-btn" id="themeToggle" type="button" data-i18n-aria="a11y.theme" aria-label="تبديل الوضع الليلي">
+        <svg class="ico-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.3"/><path d="M12 2.4v2.3M12 19.3v2.3M2.4 12h2.3M19.3 12h2.3M5.1 5.1l1.6 1.6M17.3 17.3l1.6 1.6M18.9 5.1l-1.6 1.6M6.7 17.3l-1.6 1.6"/></svg>
+        <svg class="ico-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8.2 8.2 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z"/></svg>
+      </button>
+      <a class="btn btn-primary btn-sm" href="#contact" data-i18n="cta.demo">اطلب عرضا تجريبيا</a>
+      <button class="icon-btn menu-btn" id="menuToggle" type="button" data-i18n-aria="a11y.menu" aria-label="القائمة" aria-expanded="false" aria-controls="nav">
+        <span class="burger" aria-hidden="true"><i></i><i></i><i></i></span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main id="top">
+
+<!-- ════════ الواجهة ════════ -->
+<section class="hero">
+  <div class="hero-bg" aria-hidden="true">
+    <span class="orb orb-1"></span>
+    <span class="orb orb-2"></span>
+    <span class="grid-fade"></span>
+  </div>
+
+  <div class="container hero-inner">
+    <div class="hero-copy">
+      <span class="pill"><span class="dot"></span> <span data-i18n="hero.pill">مصمم للسوق الجزائري — عربية كاملة و RTL</span></span>
+
+      <h1 data-i18n="hero.h1">
+        نظام واحد يدير
+        <span class="h1-line">
+          <span class="grad">مؤسستك</span>
+          <svg class="underline" viewBox="0 0 200 12" preserveAspectRatio="none" aria-hidden="true"><path d="M2 8c40-6 100-8 196-4"/></svg>
+        </span>
+        من البيع إلى الميزانية
+      </h1>
+
+      <p class="lead" data-i18n="hero.lead">
+        DzERP يجمع نقطة البيع، المخزون، المشتريات، المحاسبة، التوزيع، تتبع الأسطول،
+        الزكاة والموارد البشرية في منصة واحدة — بالدينار الجزائري <b>DZD</b> ودون أي تعريب لاحق.
+      </p>
+
+      <div class="hero-cta">
+        <a class="btn btn-primary btn-lg" href="#contact">
+          <span data-i18n="cta.demo">اطلب عرضا تجريبيا</span>
+          <svg viewBox="0 0 24 24" class="arrow" aria-hidden="true"><path d="M14 6l-6 6 6 6"/></svg>
+        </a>
+        <a class="btn btn-ghost btn-lg" href="#spotlight" data-i18n="hero.cta2">شاهد ما يميّزنا</a>
+      </div>
+
+      <ul class="hero-badges">
+        <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 13 4 4 10-10"/></svg> <span data-i18n="hero.b1">بدون التزام</span></li>
+        <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 13 4 4 10-10"/></svg> <span data-i18n="hero.b2">تهيئة واستيراد بياناتك</span></li>
+        <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 13 4 4 10-10"/></svg> <span data-i18n="hero.b3">تكوين الفريق بالعربية</span></li>
+      </ul>
+    </div>
+
+    <div class="hero-shot">
+      <div class="window">
+        <div class="window-bar" aria-hidden="true">
+          <span class="dots"><i></i><i></i><i></i></span>
+          <span class="window-url" data-i18n="hero.url">dzerp.dz / لوحة التحكم</span>
+        </div>
+        <img src="assets/img/dashboard.jpg" data-i18n-alt="alt.dashboard" alt="لوحة تحكم DzERP" width="1280" height="800" fetchpriority="high">
+      </div>
+
+      <div class="glass-card gc-sales">
+        <span class="gc-top">
+          <span class="gc-label" data-i18n="card.sales">مبيعات اليوم</span>
+          <span class="gc-trend" dir="ltr" data-i18n="card.trend">+12٪</span>
+        </span>
+        <span class="gc-value"><bdi>184 500</bdi> <small data-i18n="card.dzd">د.ج</small></span>
+        <svg class="spark" viewBox="0 0 120 34" preserveAspectRatio="none" aria-hidden="true">
+          <path class="spark-fill" d="M0 28 18 22 36 25 54 14 72 18 90 8 108 11 120 5V34H0z"/>
+          <path class="spark-line" d="M0 28 18 22 36 25 54 14 72 18 90 8 108 11 120 5"/>
+        </svg>
+      </div>
+
+      <div class="glass-card gc-fleet">
+        <span class="gc-live"><i></i> <span data-i18n="card.live">مباشر</span></span>
+        <span class="gc-label" data-i18n="card.drivers">سائقون في الميدان</span>
+        <span class="gc-value"><bdi>7</bdi> <small data-i18n="card.active">نشطون</small></span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════ شريط الوحدات المتحرك ════════ -->
+<div class="marquee" aria-hidden="true">
+  <div class="marquee-track" data-i18n="marquee">
+    <span>نقطة البيع</span><i>•</i><span>المخزون</span><i>•</i><span>المخازن والتحويلات</span><i>•</i>
+    <span>الفواتير</span><i>•</i><span>المشتريات</span><i>•</i><span>المحاسبة</span><i>•</i>
+    <span>القيد المزدوج</span><i>•</i><span>التوزيع</span><i>•</i><span>تتبع الأسطول</span><i>•</i>
+    <span>الزكاة</span><i>•</i><span>الموارد البشرية</span><i>•</i><span>الرواتب</span><i>•</i>
+    <span>CRM</span><i>•</i><span>المشاريع</span><i>•</i><span>الدعم</span><i>•</i><span>العقود</span><i>•</i>
+    <span>نقطة البيع</span><i>•</i><span>المخزون</span><i>•</i><span>المخازن والتحويلات</span><i>•</i>
+    <span>الفواتير</span><i>•</i><span>المشتريات</span><i>•</i><span>المحاسبة</span><i>•</i>
+    <span>القيد المزدوج</span><i>•</i><span>التوزيع</span><i>•</i><span>تتبع الأسطول</span><i>•</i>
+    <span>الزكاة</span><i>•</i><span>الموارد البشرية</span><i>•</i><span>الرواتب</span><i>•</i>
+    <span>CRM</span><i>•</i><span>المشاريع</span><i>•</i><span>الدعم</span><i>•</i><span>العقود</span><i>•</i>
+  </div>
+</div>
+
+<!-- ════════ لماذا ════════ -->
+<section class="section" id="why">
+  <div class="container">
+    <div class="section-head">
+      <span class="eyebrow" data-i18n="why.eyebrow">لماذا DzERP</span>
+      <h2 data-i18n="why.h2">أنظمة عالمية كثيرة… لكنها لا تعرف كيف تشتغل المؤسسة الجزائرية</h2>
+      <p data-i18n="why.p">بنينا الوحدات التي تحتاجها فعلا في الميدان، لا تلك التي تحتاج إلى تعريب وترقيع بعد الشراء.</p>
+    </div>
+
+    <div class="why-grid">
+      <article class="why-card">
+        <span class="why-ico i-blue" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M3 21h18M5 21V8l7-5 7 5v13M9 21v-6h6v6"/></svg>
+        </span>
+        <h3 data-i18n="why.c1.t">محلي من الأساس</h3>
+        <p data-i18n="why.c1.d">العربية و RTL ليسا إضافة لاحقة: الفواتير، التقارير والطباعة كلها مصممة بالعربية وبالدينار الجزائري منذ أول سطر.</p>
+      </article>
+
+      <article class="why-card">
+        <span class="why-ico i-green" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M12 3v18M8 7h6.5a3 3 0 0 1 0 6H8m0 0h7"/></svg>
+        </span>
+        <h3 data-i18n="why.c2.t">وحدة الزكاة</h3>
+        <p data-i18n="why.c2.d">حساب الوعاء الزكوي من النقد والمخزون التجاري وديون العملاء، مع النصاب والحول ونسخة محفوظة قابلة للمراجعة.</p>
+      </article>
+
+      <article class="why-card">
+        <span class="why-ico i-amber" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M3 16V7h11v9M14 10h4l3 3v3h-7M6.5 19.5a1.8 1.8 0 1 0 0-3.6 1.8 1.8 0 0 0 0 3.6zM17.5 19.5a1.8 1.8 0 1 0 0-3.6 1.8 1.8 0 0 0 0 3.6z"/></svg>
+        </span>
+        <h3 data-i18n="why.c3.t">توزيع وسائقون</h3>
+        <p data-i18n="why.c3.d">جولات يومية، صندوق نقدي لكل سائق، بيع نقدا أو بالآجل، وتحصيل يُقفل آخر النهار بأرقام واضحة لا باجتهادات.</p>
+      </article>
+
+      <article class="why-card">
+        <span class="why-ico i-violet" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M12 21s7-5.4 7-11a7 7 0 1 0-14 0c0 5.6 7 11 7 11z"/><circle cx="12" cy="10" r="2.6"/></svg>
+        </span>
+        <h3 data-i18n="why.c4.t">تتبع يحترم الخصوصية</h3>
+        <p data-i18n="why.c4.d">خريطة مباشرة تعتمد على GPS هاتف السائق خلال جلسة عمل صريحة فقط — ولا شيء خارج ساعات الدوام.</p>
+      </article>
+    </div>
+
+    <div class="stats-band">
+      <div class="stat"><b data-count="30" data-prefix="+">+30</b><span data-i18n="stat.1">وحدة جاهزة للتشغيل</span></div>
+      <div class="stat"><b data-count="100" data-suffix="٪">100٪</b><span data-i18n="stat.2">واجهة عربية RTL</span></div>
+      <div class="stat"><b>DZD</b><span data-i18n="stat.3">عملة ومحاسبة محلية</span></div>
+      <div class="stat"><b>24/7</b><span data-i18n="stat.4">تتبع ميداني مباشر</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════ ما يميّزنا ════════ -->
+<section class="section section-alt" id="spotlight">
+  <div class="container">
+    <div class="section-head">
+      <span class="eyebrow" data-i18n="spot.eyebrow">ما يميّزنا</span>
+      <h2 data-i18n="spot.h2">ثلاث وحدات لن تجدها جاهزة في نظام أجنبي</h2>
+    </div>
+
+    <article class="spot">
+      <div class="spot-copy">
+        <span class="spot-tag tag-green" data-i18n="spot.1.tag">الزكاة</span>
+        <h3 data-i18n="spot.1.t">احسب زكاة مؤسستك من بياناتك، لا من ورقة جانبية</h3>
+        <p data-i18n="spot.1.d">النظام يقرأ نقدك وأرصدتك البنكية، مخزونك التجاري وديون عملائك، ويطرح الكريدي المخصوم ليعطيك الوعاء الزكوي مباشرة.</p>
+        <ul class="ticks">
+          <li data-i18n="spot.1.l1">معاينة فورية بتاريخ اليوم قبل أي حفظ</li>
+          <li data-i18n="spot.1.l2">تحقق من النصاب ومرور الحول</li>
+          <li data-i18n="spot.1.l3">حساب محفوظ كنسخة قابلة للمراجعة والتدقيق</li>
+          <li data-i18n="spot.1.l4">تقرير مفصّل جاهز للطباعة</li>
+        </ul>
+      </div>
+      <div class="spot-media">
+        <div class="window window-sm">
+          <div class="window-bar" aria-hidden="true"><span class="dots"><i></i><i></i><i></i></span><span class="window-url" data-i18n="spot.1.url">لوحة الزكاة</span></div>
+          <img src="assets/img/zakat-dashboard.png" data-i18n-alt="alt.zakat" alt="لوحة تحكم الزكاة في DzERP" loading="lazy">
+        </div>
+      </div>
+    </article>
+
+    <article class="spot spot-rev">
+      <div class="spot-copy">
+        <span class="spot-tag tag-violet" data-i18n="spot.2.tag">تتبع الأسطول</span>
+        <h3 data-i18n="spot.2.t">اعرف أين سياراتك الآن — أثناء العمل فقط</h3>
+        <p data-i18n="spot.2.d">خريطة مباشرة لسيارات الشركة تعتمد على GPS هاتف السائق خلال جلسة تتبع صريحة، مع مدخل دخول مستقل للسائقين ورمز أسطول للانضمام الآمن.</p>
+        <ul class="ticks">
+          <li data-i18n="spot.2.l1">شاشة سائق مخصصة للهاتف</li>
+          <li data-i18n="spot.2.l2">جلسة تتبع تبدأ وتنتهي بقرار صريح</li>
+          <li data-i18n="spot.2.l3">رمز أسطول يمنع انضمام سائق من شركة أخرى</li>
+          <li data-i18n="spot.2.l4">منفذ جاهز لأجهزة GPS SIM أو OBD لاحقا</li>
+        </ul>
+      </div>
+      <div class="spot-media">
+        <div class="window window-sm">
+          <div class="window-bar" aria-hidden="true"><span class="dots"><i></i><i></i><i></i></span><span class="window-url" data-i18n="spot.2.url">خريطة الأسطول</span></div>
+          <img src="assets/img/fleet-dashboard.png" data-i18n-alt="alt.fleet" alt="خريطة تتبع الأسطول المباشرة" loading="lazy">
+        </div>
+        <div class="phone">
+          <img src="assets/img/fleet-mobile.png" data-i18n-alt="alt.driver" alt="شاشة التتبع لدى السائق على الهاتف" loading="lazy">
+        </div>
+      </div>
+    </article>
+
+    <article class="spot">
+      <div class="spot-copy">
+        <span class="spot-tag tag-blue" data-i18n="spot.3.tag">التوزيع ونقطة البيع</span>
+        <h3 data-i18n="spot.3.t">من الرف إلى الشاحنة إلى الصندوق، برقم واحد صحيح</h3>
+        <p data-i18n="spot.3.d">بيع سريع في نقطة البيع، وجولات توزيع مُسندة للسائقين بصندوق نقدي لكل واحد — كل عملية تنزل مباشرة على المخزون والمحاسبة دون إدخال مزدوج.</p>
+        <ul class="ticks">
+          <li data-i18n="spot.3.l1">عدة نقاط بيع وعدة مخازن</li>
+          <li data-i18n="spot.3.l2">بيع نقدا أو بالآجل مع متابعة التحصيل</li>
+          <li data-i18n="spot.3.l3">تحليل أداء السائقين والجولات</li>
+          <li data-i18n="spot.3.l4">تحويلات بين المخازن مع تتبع الرصيد</li>
+        </ul>
+      </div>
+      <div class="spot-media">
+        <div class="window window-sm">
+          <div class="window-bar" aria-hidden="true"><span class="dots"><i></i><i></i><i></i></span><span class="window-url" data-i18n="spot.3.url">لوحة نقطة البيع</span></div>
+          <img src="assets/img/pos-dashboard.jpg" data-i18n-alt="alt.pos" alt="لوحة تحكم نقطة البيع" loading="lazy">
+        </div>
+      </div>
+    </article>
+  </div>
+</section>
+
+<!-- ════════ الوحدات ════════ -->
+<section class="section" id="modules">
+  <div class="container">
+    <div class="section-head">
+      <span class="eyebrow" data-i18n="mod.eyebrow">الوحدات</span>
+      <h2 data-i18n="mod.h2">كل ما تحتاجه المؤسسة، في مكان واحد</h2>
+      <p data-i18n="mod.p">فعّل ما تحتاجه اليوم وأضف الباقي لاحقا — البيانات تبقى موحدة بين كل الوحدات.</p>
+    </div>
+
+    <div class="tabs" role="tablist" data-i18n-aria="a11y.modTabs" aria-label="تصنيف الوحدات">
+      <button class="tab is-active" data-group="all" role="tab" aria-selected="true" data-i18n="tab.all">الكل</button>
+      <button class="tab" data-group="sales" role="tab" aria-selected="false" data-i18n="tab.sales">البيع والمخزون</button>
+      <button class="tab" data-group="finance" role="tab" aria-selected="false" data-i18n="tab.finance">المالية</button>
+      <button class="tab" data-group="field" role="tab" aria-selected="false" data-i18n="tab.field">الميدان</button>
+      <button class="tab" data-group="team" role="tab" aria-selected="false" data-i18n="tab.team">الفريق والعملاء</button>
+      <button class="tab" data-group="tools" role="tab" aria-selected="false" data-i18n="tab.tools">أدوات</button>
+    </div>
+
+    <div class="mod-grid" id="modGrid">
+      <article class="mod" data-group="sales"><span class="mod-ico" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M7 20h10M9 16v4M15 16v4"/></svg></span>
+        <h3 data-i18n="m1.t">نقطة البيع POS</h3><p data-i18n="m1.d">بيع سريع، عدة نقاط بيع ومخازن، وإيرادات يومية ومتوسط المعاملات في لوحة واحدة.</p></article>
+
+      <article class="mod" data-group="sales"><span class="mod-ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M20 7 12 3 4 7v10l8 4 8-4z"/><path d="m4 7 8 4 8-4M12 11v10"/></svg></span>
+        <h3 data-i18n="m2.t">المنتجات والمخزون</h3><p data-i18n="m2.d">SKU، سعر بيع وشراء، تصنيفات ووحدات، ومتابعة فورية للكميات الحساسة قبل نفادها.</p></article>
+
+      <article class="mod" data-group="sales"><span class="mod-ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 21V9l6-4 6 4v12M15 21V13h6v8M6 21v-4h3v4"/></svg></span>
+        <h3 data-i18n="m3.t">المخازن والتحويلات</h3><p data-i18n="m3.d">عدة نقاط تخزين مع نقل المنتجات بينها وتتبع الرصيد في كل مخزن على حدة.</p></article>
+
+      <article class="mod" data-group="sales"><span class="mod-ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M7 3h10a2 2 0 0 1 2 2v16l-3-2-2 2-2-2-2 2-3-2V5a2 2 0 0 1 2-2z"/><path d="M9 8h6M9 12h6"/></svg></span>
+        <h3 data-i18n="m4.t">المبيعات والفواتير</h3><p data-i18n="m4.d">عروض أسعار، فواتير بيع، مرتجعات، ومتابعة حالة الدفع حتى التحصيل الكامل.</p></article>
+
+      <article class="mod" data-group="sales"><span class="mod-ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 6h16v12H4z"/><path d="M4 10h16M8 14h4"/></svg></span>
+        <h3 data-i18n="m5.t">المشتريات والموردون</h3><p data-i18n="m5.d">فواتير شراء، مرتجعات للمورد، وربط مباشر بالمخزون والحسابات دون إدخال مزدوج.</p></article>
+
+      <article class="mod" data-group="finance"><span class="mod-ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 19V5M4 19h16"/><path d="m7 15 3.5-4 3 2.5L20 7"/></svg></span>
+        <h3 data-i18n="m6.t">المحاسبة والتقارير</h3><p data-i18n="m6.d">دليل حسابات، إيرادات ومصاريف، حسابات بنكية وتقارير مالية جاهزة للإدارة.</p></article>
+
+      <article class="mod" data-group="finance"><span class="mod-ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 5v14M6 9h12M6 15h12"/></svg></span>
+        <h3 data-i18n="m7.t">القيد المزدوج</h3><p data-i18n="m7.d">محاسبة متقدمة تسجّل كل عملية في حسابين أو أكثر لضمان توازن الدفاتر.</p></article>
+
+      <article class="mod" data-group="finance"><span class="mod-ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3v18M8 7h6.5a3 3 0 0 1 0 6H8m0 0h7"/></svg></span>
+        <h3 data-i18n="m8.t">الزكاة</h3><p data-i18n="m8.d">وعاء زكوي، نصاب وحول، معاينة فورية وحسابات محفوظة قابلة للمراجعة مع تقرير مفصّل.</p></article>
+
+      <article class="mod" data-group="finance"><span class="mod-ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 7h16v13H4z"/><path d="M4 11h16M9 7V4M15 7V4"/></svg></span>
+        <h3 data-i18n="m9.t">الميزانيات والأهداف</h3><p data-i18n="m9.d">مخطط ميزانية للأقسام والمشاريع، وأهداف قابلة للقياس تُقارن بالأداء الفعلي.</p></article>
+
+      <article class="mod" data-group="field"><span class="mod-ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 16V7h11v9M14 10h4l3 3v3h-7M6.5 19.5a1.8 1.8 0 1 0 0-3.6 1.8 1.8 0 0 0 0 3.6zM17.5 19.5a1.8 1.8 0 1 0 0-3.6 1.8 1.8 0 0 0 0 3.6z"/></svg></span>
+        <h3 data-i18n="m10.t">التوزيع</h3><p data-i18n="m10.d">إسناد الجولات للسائقين، صندوق نقدي لكل سائق، بيع نقدي أو بالآجل، وتحليل الأداء.</p></article>
+
+      <article class="mod" data-group="field"><span class="mod-ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 21s7-5.4 7-11a7 7 0 1 0-14 0c0 5.6 7 11 7 11z"/><circle cx="12" cy="10" r="2.6"/></svg></span>
+        <h3 data-i18n="m11.t">تتبع الأسطول</h3><p data-i18n="m11.d">خريطة مباشرة لسيارات الشركة أثناء جلسات العمل، مع مدخل مستقل للسائقين.</p></article>
+
+      <article class="mod" data-group="team"><span class="mod-ico" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.2"/><path d="M3 20a6 6 0 0 1 12 0M17 11.5a2.6 2.6 0 1 0 0-5.2M18 20a5 5 0 0 0-3-4.6"/></svg></span>
+        <h3 data-i18n="m12.t">الموارد البشرية</h3><p data-i18n="m12.d">موظفون، حضور وغياب، كشوف رواتب، وأقسام ومناصب منظمة داخل الشركة.</p></article>
+
+      <article class="mod" data-group="team"><span class="mod-ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 7h6v6H4zM14 7h6v10h-6zM4 15h6v4H4z"/></svg></span>
+        <h3 data-i18n="m13.t">CRM والمشاريع</h3><p data-i18n="m13.d">عملاء محتملون، صفقات حسب المرحلة، مشاريع ومهام وفرق عمل بمواعيد واضحة.</p></article>
+
+      <article class="mod" data-group="team"><span class="mod-ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 5h14v10H9l-4 4z"/><path d="M9 9h6"/></svg></span>
+        <h3 data-i18n="m14.t">الدعم والعقود</h3><p data-i18n="m14.d">تذاكر العملاء، قاعدة معرفة، وعقود بقيمها وتواريخها وملفاتها المرفقة.</p></article>
+
+      <article class="mod" data-group="tools"><span class="mod-ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 4h9l3 3v13H6z"/><path d="M9 11h6M9 15h4"/></svg></span>
+        <h3 data-i18n="m15.t">النماذج والوسائط</h3><p data-i18n="m15.d">بناء نماذج مخصصة بدون برمجة، ومكتبة وسائط لكل الملفات والمستندات.</p></article>
+
+      <article class="mod" data-group="tools"><span class="mod-ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h10"/><circle cx="18" cy="18" r="2.5"/></svg></span>
+        <h3 data-i18n="m16.t">التقويم وجدول المواعيد</h3><p data-i18n="m16.d">عرض زمني للمواعيد والمهام والأحداث، وتنظيم أعمال الفريق اليومية.</p></article>
+
+      <article class="mod" data-group="tools"><span class="mod-ico" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9 7 7M17 17l2.1 2.1M19.1 4.9 17 7M7 17l-2.1 2.1"/></svg></span>
+        <h3 data-i18n="m17.t">الإعدادات والصلاحيات</h3><p data-i18n="m17.d">مستخدمون وأدوار، بيانات الشركة، اللغة والعملة والقوالب — كل شيء تحت سيطرة المدير.</p></article>
+    </div>
+  </div>
+</section>
+
+<!-- ════════ لقطات ════════ -->
+<section class="section section-alt" id="showcase">
+  <div class="container">
+    <div class="section-head">
+      <span class="eyebrow" data-i18n="gal.eyebrow">لقطات من النظام</span>
+      <h2 data-i18n="gal.h2">شاشات حقيقية، لا رسومات تسويقية</h2>
+      <p data-i18n="gal.p">اضغط أي صورة لعرضها بحجم كامل، وتنقّل بالأسهم.</p>
+    </div>
+
+    <div class="tabs tabs-center" role="tablist" data-i18n-aria="a11y.galTabs" aria-label="تصفية اللقطات">
+      <button class="tab is-active" data-filter="all" role="tab" aria-selected="true" data-i18n="tab.all">الكل</button>
+      <button class="tab" data-filter="sales" role="tab" aria-selected="false" data-i18n="tab.sales">البيع والمخزون</button>
+      <button class="tab" data-filter="finance" role="tab" aria-selected="false" data-i18n="tab.finance2">المالية والزكاة</button>
+      <button class="tab" data-filter="field" role="tab" aria-selected="false" data-i18n="tab.field">الميدان</button>
+      <button class="tab" data-filter="team" role="tab" aria-selected="false" data-i18n="tab.team">الفريق والعملاء</button>
+    </div>
+
+    <div class="gallery" id="gallery">
+      <figure class="shot" data-cat="sales" tabindex="0" role="button"><span class="shot-img"><img src="assets/img/pos-dashboard.jpg" data-i18n-alt="alt.pos" alt="لوحة تحكم نقطة البيع" loading="lazy"></span><figcaption><span data-i18n="g1">لوحة تحكم POS</span><span class="zoom" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5M11 8.5v5M8.5 11h5"/></svg></span></figcaption></figure>
+      <figure class="shot" data-cat="sales" tabindex="0" role="button"><span class="shot-img"><img src="assets/img/pos-create.jpg" data-i18n-alt="alt.posCreate" alt="شاشة إنشاء عملية بيع" loading="lazy"></span><figcaption><span data-i18n="g2">إنشاء عملية بيع</span><span class="zoom" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5M11 8.5v5M8.5 11h5"/></svg></span></figcaption></figure>
+      <figure class="shot" data-cat="sales" tabindex="0" role="button"><span class="shot-img"><img src="assets/img/products.jpg" data-i18n-alt="alt.products" alt="قائمة المنتجات والخدمات" loading="lazy"></span><figcaption><span data-i18n="g3">المنتجات والخدمات</span><span class="zoom" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5M11 8.5v5M8.5 11h5"/></svg></span></figcaption></figure>
+      <figure class="shot" data-cat="sales" tabindex="0" role="button"><span class="shot-img"><img src="assets/img/warehouses.jpg" data-i18n-alt="alt.warehouses" alt="إدارة المخازن" loading="lazy"></span><figcaption><span data-i18n="g4">المخازن</span><span class="zoom" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5M11 8.5v5M8.5 11h5"/></svg></span></figcaption></figure>
+      <figure class="shot" data-cat="sales" tabindex="0" role="button"><span class="shot-img"><img src="assets/img/sales-invoices.jpg" data-i18n-alt="alt.invoices" alt="فواتير البيع" loading="lazy"></span><figcaption><span data-i18n="g5">فواتير البيع</span><span class="zoom" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5M11 8.5v5M8.5 11h5"/></svg></span></figcaption></figure>
+      <figure class="shot" data-cat="finance" tabindex="0" role="button"><span class="shot-img"><img src="assets/img/chart-of-accounts.jpg" data-i18n-alt="alt.coa" alt="دليل الحسابات" loading="lazy"></span><figcaption><span data-i18n="g6">دليل الحسابات</span><span class="zoom" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5M11 8.5v5M8.5 11h5"/></svg></span></figcaption></figure>
+      <figure class="shot" data-cat="finance" tabindex="0" role="button"><span class="shot-img"><img src="assets/img/account-reports.jpg" data-i18n-alt="alt.reports" alt="تقارير الحسابات" loading="lazy"></span><figcaption><span data-i18n="g7">التقارير المالية</span><span class="zoom" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5M11 8.5v5M8.5 11h5"/></svg></span></figcaption></figure>
+      <figure class="shot" data-cat="finance" tabindex="0" role="button"><span class="shot-img"><img src="assets/img/zakat-dashboard.png" data-i18n-alt="alt.zakat" alt="لوحة تحكم الزكاة" loading="lazy"></span><figcaption><span data-i18n="g8">لوحة الزكاة</span><span class="zoom" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5M11 8.5v5M8.5 11h5"/></svg></span></figcaption></figure>
+      <figure class="shot" data-cat="finance" tabindex="0" role="button"><span class="shot-img"><img src="assets/img/zakat-report.png" data-i18n-alt="alt.zakatReport" alt="تقرير الزكاة" loading="lazy"></span><figcaption><span data-i18n="g9">تقرير الزكاة</span><span class="zoom" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5M11 8.5v5M8.5 11h5"/></svg></span></figcaption></figure>
+      <figure class="shot" data-cat="field" tabindex="0" role="button"><span class="shot-img"><img src="assets/img/fleet-dashboard.png" data-i18n-alt="alt.fleet" alt="خريطة تتبع الأسطول" loading="lazy"></span><figcaption><span data-i18n="g10">خريطة الأسطول</span><span class="zoom" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5M11 8.5v5M8.5 11h5"/></svg></span></figcaption></figure>
+      <figure class="shot" data-cat="field" tabindex="0" role="button"><span class="shot-img"><img src="assets/img/fleet-mobile.png" data-i18n-alt="alt.driver" alt="شاشة التتبع لدى السائق" loading="lazy"></span><figcaption><span data-i18n="g11">شاشة السائق</span><span class="zoom" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5M11 8.5v5M8.5 11h5"/></svg></span></figcaption></figure>
+      <figure class="shot" data-cat="team" tabindex="0" role="button"><span class="shot-img"><img src="assets/img/crm-dashboard.jpg" data-i18n-alt="alt.crm" alt="لوحة تحكم CRM" loading="lazy"></span><figcaption><span data-i18n="g12">لوحة CRM</span><span class="zoom" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5M11 8.5v5M8.5 11h5"/></svg></span></figcaption></figure>
+      <figure class="shot" data-cat="team" tabindex="0" role="button"><span class="shot-img"><img src="assets/img/hrm-dashboard.jpg" data-i18n-alt="alt.hrm" alt="لوحة الموارد البشرية" loading="lazy"></span><figcaption><span data-i18n="g13">الموارد البشرية</span><span class="zoom" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5M11 8.5v5M8.5 11h5"/></svg></span></figcaption></figure>
+      <figure class="shot" data-cat="team" tabindex="0" role="button"><span class="shot-img"><img src="assets/img/support-dashboard.jpg" data-i18n-alt="alt.support" alt="لوحة تحكم الدعم" loading="lazy"></span><figcaption><span data-i18n="g14">الدعم والتذاكر</span><span class="zoom" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5M11 8.5v5M8.5 11h5"/></svg></span></figcaption></figure>
+    </div>
+  </div>
+</section>
+
+<!-- ════════ كيف نبدأ ════════ -->
+<section class="section" id="how">
+  <div class="container">
+    <div class="section-head">
+      <span class="eyebrow" data-i18n="how.eyebrow">كيف نبدأ</span>
+      <h2 data-i18n="how.h2">من أول اتصال إلى التشغيل الفعلي</h2>
+    </div>
+
+    <ol class="steps">
+      <li class="step"><span class="step-n">1</span>
+        <h3 data-i18n="how.s1.t">جلسة تعريف</h3>
+        <p data-i18n="how.s1.d">نفهم نشاطك، دورة البيع والمخزون عندك، وما الذي يضيع وقتك اليوم.</p></li>
+      <li class="step"><span class="step-n">2</span>
+        <h3 data-i18n="how.s2.t">تهيئة النظام</h3>
+        <p data-i18n="how.s2.d">نُعدّ الشركة، المخازن، المستخدمين والصلاحيات، ونستورد المنتجات والعملاء الموجودين.</p></li>
+      <li class="step"><span class="step-n">3</span>
+        <h3 data-i18n="how.s3.t">تكوين الفريق</h3>
+        <p data-i18n="how.s3.d">تدريب عملي لكل دور: البائع، أمين المخزن، المحاسب والسائق — بالعربية وعلى بياناتك أنت.</p></li>
+      <li class="step"><span class="step-n">4</span>
+        <h3 data-i18n="how.s4.t">تشغيل ومتابعة</h3>
+        <p data-i18n="how.s4.d">ننطلق بالتشغيل الحقيقي، ونبقى معك للمتابعة والتعديلات وإضافة الوحدات عند الحاجة.</p></li>
+    </ol>
+  </div>
+</section>
+
+<!-- ════════ الباقات ════════ -->
+<section class="section section-alt" id="plans">
+  <div class="container">
+    <div class="section-head">
+      <span class="eyebrow" data-i18n="plan.eyebrow">الباقات</span>
+      <h2 data-i18n="plan.h2">ابدأ بما تحتاجه، وكبّر النظام مع مؤسستك</h2>
+      <p data-i18n="plan.p">السعر يُحدَّد حسب عدد المستخدمين والوحدات المفعّلة — اطلب عرض سعر مفصّلا.</p>
+    </div>
+
+    <div class="plans">
+      <article class="plan">
+        <h3 data-i18n="plan.1.t">المتجر</h3>
+        <p class="plan-sub" data-i18n="plan.1.s">للمحلات ونقاط البيع</p>
+        <p class="plan-price" data-i18n="plan.price">عرض سعر <span>حسب الحاجة</span></p>
+        <ul class="ticks">
+          <li data-i18n="plan.1.l1">نقطة البيع POS</li>
+          <li data-i18n="plan.1.l2">المنتجات والمخزون</li>
+          <li data-i18n="plan.1.l3">العملاء والفواتير</li>
+          <li data-i18n="plan.1.l4">تقارير البيع اليومية</li>
+          <li data-i18n="plan.1.l5">مستخدمون وصلاحيات</li>
+        </ul>
+        <a class="btn btn-outline" href="#contact" data-i18n="plan.cta">اطلب عرض سعر</a>
+      </article>
+
+      <article class="plan plan-featured">
+        <span class="plan-tag" data-i18n="plan.badge">الأكثر طلبا</span>
+        <h3 data-i18n="plan.2.t">المؤسسة</h3>
+        <p class="plan-sub" data-i18n="plan.2.s">للشركات التجارية والتوزيع</p>
+        <p class="plan-price" data-i18n="plan.price">عرض سعر <span>حسب الحاجة</span></p>
+        <ul class="ticks">
+          <li data-i18n="plan.2.l1">كل ما في باقة المتجر</li>
+          <li data-i18n="plan.2.l2">المشتريات والموردون</li>
+          <li data-i18n="plan.2.l3">عدة مخازن وتحويلات</li>
+          <li data-i18n="plan.2.l4">المحاسبة والتقارير المالية</li>
+          <li data-i18n="plan.2.l5">التوزيع وصناديق السائقين</li>
+          <li data-i18n="plan.2.l6">الزكاة</li>
+        </ul>
+        <a class="btn btn-primary" href="#contact" data-i18n="plan.cta">اطلب عرض سعر</a>
+      </article>
+
+      <article class="plan">
+        <h3 data-i18n="plan.3.t">متقدمة</h3>
+        <p class="plan-sub" data-i18n="plan.3.s">للمجموعات متعددة الأنشطة</p>
+        <p class="plan-price" data-i18n="plan.price">عرض سعر <span>حسب الحاجة</span></p>
+        <ul class="ticks">
+          <li data-i18n="plan.3.l1">كل ما في باقة المؤسسة</li>
+          <li data-i18n="plan.3.l2">تتبع الأسطول المباشر</li>
+          <li data-i18n="plan.3.l3">الموارد البشرية والرواتب</li>
+          <li data-i18n="plan.3.l4">CRM والمشاريع والعقود</li>
+          <li data-i18n="plan.3.l5">القيد المزدوج والميزانيات</li>
+          <li data-i18n="plan.3.l6">مرافقة وتخصيص حسب الطلب</li>
+        </ul>
+        <a class="btn btn-outline" href="#contact" data-i18n="plan.cta">اطلب عرض سعر</a>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ════════ أسئلة ════════ -->
+<section class="section" id="faq">
+  <div class="container narrow">
+    <div class="section-head">
+      <span class="eyebrow" data-i18n="faq.eyebrow">أسئلة شائعة</span>
+      <h2 data-i18n="faq.h2">ما يسأله أغلب العملاء قبل البدء</h2>
+    </div>
+
+    <div class="faq">
+      <details class="qa" open>
+        <summary data-i18n="faq.q1">هل النظام يشتغل بالعربية بالكامل؟</summary>
+        <div class="qa-body"><p data-i18n="faq.a1">نعم. الواجهة، القوائم، الفواتير والتقارير كلها بالعربية وباتجاه من اليمين إلى اليسار، والعملة الافتراضية هي الدينار الجزائري د.ج.</p></div>
+      </details>
+      <details class="qa">
+        <summary data-i18n="faq.q2">هل يمكن تفعيل بعض الوحدات فقط؟</summary>
+        <div class="qa-body"><p data-i18n="faq.a2">نعم. النظام مقسّم إلى وحدات مستقلة: تُفعّل ما تحتاجه اليوم وتضيف الباقي لاحقا دون إعادة تركيب النظام أو فقدان البيانات.</p></div>
+      </details>
+      <details class="qa">
+        <summary data-i18n="faq.q3">هل يعمل على الهاتف؟</summary>
+        <div class="qa-body"><p data-i18n="faq.a3">الواجهة متجاوبة مع الهاتف واللوحي، وللسائقين شاشة تتبع مخصصة للهاتف مع مدخل دخول مستقل خاص بهم.</p></div>
+      </details>
+      <details class="qa">
+        <summary data-i18n="faq.q4">كيف يشتغل تتبع الأسطول؟ وهل يحترم خصوصية السائق؟</summary>
+        <div class="qa-body"><p data-i18n="faq.a4">الموقع يُسجَّل فقط بعد بدء جلسة تتبع صريحة أثناء العمل، ويتوقف بانتهائها. لا تتبع خارج ساعات الدوام.</p></div>
+      </details>
+      <details class="qa">
+        <summary data-i18n="faq.q5">هل يمكن استيراد بياناتنا الحالية؟</summary>
+        <div class="qa-body"><p data-i18n="faq.a5">نعم، نساعدك في استيراد المنتجات والعملاء والموردين وأرصدة المخزون في مرحلة التهيئة قبل التشغيل الفعلي.</p></div>
+      </details>
+      <details class="qa">
+        <summary data-i18n="faq.q6">أين تُخزَّن البيانات؟</summary>
+        <div class="qa-body"><p data-i18n="faq.a6">يمكن تشغيل DzERP على خادم خاص بمؤسستك أو على استضافة نديرها لك — القرار يعود إليك حسب سياستك الداخلية.</p></div>
+      </details>
+    </div>
+  </div>
+</section>
+
+<!-- ════════ اتصال ════════ -->
+<section class="cta" id="contact">
+  <div class="cta-bg" aria-hidden="true"><span class="orb orb-3"></span></div>
+  <div class="container cta-inner">
+    <div class="cta-copy">
+      <span class="eyebrow eyebrow-light" data-i18n="contact.eyebrow">ابدأ اليوم</span>
+      <h2 data-i18n="contact.h2">جاهز ترى DzERP على بيانات مؤسستك؟</h2>
+      <p data-i18n="contact.p">اترك معلوماتك ونرتب لك عرضا تجريبيا مباشرا، أو تواصل معنا مباشرة.</p>
+      <ul class="cta-contacts">
+        <li><span class="cc-ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16v12H4z"/><path d="m4 7 8 6 8-6"/></svg></span> contact@dzerp.dz</li>
+        <li><span class="cc-ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h4l2 5-2.5 1.5a12 12 0 0 0 5 5L15 13l5 2v4a1 1 0 0 1-1.1 1A16 16 0 0 1 4 5.1 1 1 0 0 1 5 4z"/></svg></span> <span dir="ltr">+213 000 00 00 00</span></li>
+        <li><span class="cc-ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s7-5.4 7-11a7 7 0 1 0-14 0c0 5.6 7 11 7 11z"/><circle cx="12" cy="10" r="2.6"/></svg></span> <span data-i18n="contact.city">الجزائر العاصمة، الجزائر</span></li>
+      </ul>
+    </div>
+
+    <form class="cta-form" id="demoForm" novalidate>
+      <div class="field">
+        <label for="f-name" data-i18n="form.name">الاسم الكامل</label>
+        <input id="f-name" name="name" type="text" required data-i18n-ph="form.namePh" placeholder="محمد بن أحمد" autocomplete="name">
+      </div>
+      <div class="field">
+        <label for="f-company" data-i18n="form.company">المؤسسة</label>
+        <input id="f-company" name="company" type="text" data-i18n-ph="form.companyPh" placeholder="اسم الشركة" autocomplete="organization">
+      </div>
+      <div class="field">
+        <label for="f-phone" data-i18n="form.phone">الهاتف</label>
+        <input id="f-phone" name="phone" type="tel" required placeholder="0X XX XX XX XX" autocomplete="tel" dir="ltr">
+      </div>
+      <div class="field">
+        <label for="f-need" data-i18n="form.need">ما الذي تحتاجه أكثر؟</label>
+        <select id="f-need" name="need">
+          <option data-i18n="form.o1">نقطة بيع ومخزون</option>
+          <option data-i18n="form.o2">محاسبة وتقارير</option>
+          <option data-i18n="form.o3">توزيع وسائقون</option>
+          <option data-i18n="form.o4">تتبع أسطول</option>
+          <option data-i18n="form.o5">زكاة</option>
+          <option data-i18n="form.o6">نظام متكامل</option>
+        </select>
+      </div>
+      <button class="btn btn-primary btn-block" type="submit" data-i18n="form.submit">أرسل الطلب</button>
+      <p class="form-note" id="formNote" role="status"></p>
+    </form>
+  </div>
+</section>
+
+</main>
+
+<footer class="site-footer">
+  <div class="container footer-inner">
+    <div class="footer-brand">
+      <a class="brand" href="#top">
+        <span class="brand-mark" aria-hidden="true">
+          <img src="assets/img/dzerp-mark.png" alt="" width="256" height="256" loading="lazy">
+        </span>
+        <span class="brand-text">DzERP</span>
+      </a>
+      <p data-i18n="footer.about">نظام إدارة موارد ونقطة بيع متكامل، مصمم للمؤسسات الجزائرية — بالعربية وبالدينار الجزائري.</p>
+    </div>
+    <nav class="footer-col" data-i18n-aria="a11y.productNav" aria-label="روابط المنتج">
+      <h4 data-i18n="footer.product">المنتج</h4>
+      <a href="#spotlight" data-i18n="nav.spot">ما يميّزنا</a>
+      <a href="#modules" data-i18n="nav.modules">الوحدات</a>
+      <a href="#showcase" data-i18n="nav.shots">لقطات النظام</a>
+      <a href="#plans" data-i18n="nav.plans">الباقات</a>
+    </nav>
+    <nav class="footer-col" data-i18n-aria="a11y.otherNav" aria-label="روابط أخرى">
+      <h4 data-i18n="footer.company">الشركة</h4>
+      <a href="#why" data-i18n="nav.why">لماذا DzERP</a>
+      <a href="#how" data-i18n="nav.how">كيف نبدأ</a>
+      <a href="#faq" data-i18n="nav.faq2">أسئلة شائعة</a>
+    </nav>
+    <div class="footer-col">
+      <h4 data-i18n="footer.contact">تواصل</h4>
+      <a href="mailto:contact@dzerp.dz">contact@dzerp.dz</a>
+      <a href="tel:+21300000000" dir="ltr">+213 000 00 00 00</a>
+      <a href="#contact" data-i18n="cta.demo">اطلب عرضا تجريبيا</a>
+    </div>
+  </div>
+  <div class="container footer-bottom">
+    <span data-i18n="footer.rights">© <span id="year">2026</span> DzERP. كل الحقوق محفوظة.</span>
+    <span data-i18n="footer.made">صُنع في الجزائر 🇩🇿</span>
+  </div>
+</footer>
+
+<div class="mobile-bar" id="mobileBar">
+  <a class="btn btn-primary btn-block" href="#contact" data-i18n="cta.demo">اطلب عرضا تجريبيا</a>
+</div>
+
+<button class="to-top" id="toTop" type="button" data-i18n-aria="a11y.top" aria-label="العودة إلى الأعلى">
+  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 14l6-6 6 6"/></svg>
+</button>
+
+<div class="lightbox" id="lightbox" role="dialog" aria-modal="true" data-i18n-aria="a11y.viewer" aria-label="عرض الصورة" hidden>
+  <button class="lb-close" id="lbClose" type="button" data-i18n-aria="a11y.close" aria-label="إغلاق">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
+  </button>
+  <button class="lb-nav lb-prev" id="lbPrev" type="button" data-i18n-aria="a11y.prev" aria-label="السابق">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 6l6 6-6 6"/></svg>
+  </button>
+  <div class="lb-stage">
+    <img id="lbImg" src="" alt="">
+    <p class="lb-caption"><span id="lbCap"></span> <span class="lb-count" id="lbCount"></span></p>
+  </div>
+  <button class="lb-nav lb-next" id="lbNext" type="button" data-i18n-aria="a11y.next" aria-label="التالي">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 6l-6 6 6 6"/></svg>
+  </button>
+</div>
+
+<script src="assets/js/i18n.js"></script>
+<script src="assets/js/main.js"></script>
+</body>
+</html>
