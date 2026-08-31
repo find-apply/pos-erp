@@ -22,6 +22,7 @@ export type FleetMapVehicle = {
     tracking_status: 'online' | 'stale' | 'offline' | string;
     gps_device_name?: string | null;
     has_device_token?: boolean;
+    traccar_unique_id?: string | null;
     airtag_reference?: string | null;
     notes?: string | null;
     last_latitude?: number | null;
@@ -75,6 +76,14 @@ export default function FleetMap({ vehicles, className = 'h-[440px]', focusedVeh
         () => vehicles.filter((vehicle) => vehicle.last_latitude !== null && vehicle.last_latitude !== undefined && vehicle.last_longitude !== null && vehicle.last_longitude !== undefined),
         [vehicles]
     );
+
+    // Identifies the *set* of mapped vehicles, ignoring their coordinates, so a
+    // position refresh can be told apart from vehicles entering or leaving the map.
+    const locatedIdsKey = useMemo(
+        () => locatedVehicles.map((vehicle) => vehicle.id).sort((a, b) => a - b).join(','),
+        [locatedVehicles]
+    );
+    const fittedKeyRef = useRef<string | null>(null);
 
     useEffect(() => {
         if (!mapContainerRef.current || mapRef.current) return;
@@ -154,10 +163,14 @@ export default function FleetMap({ vehicles, className = 'h-[440px]', focusedVeh
             }
         }
 
-        if (bounds.isValid()) {
+        // Refit only when the set of vehicles changes. The map polls for fresh
+        // positions, and refitting on every tick would drag the view back from
+        // wherever the operator had panned or zoomed.
+        if (bounds.isValid() && fittedKeyRef.current !== locatedIdsKey) {
             mapRef.current.fitBounds(bounds, { padding: [40, 40], maxZoom: 14 });
+            fittedKeyRef.current = locatedIdsKey;
         }
-    }, [focusedVehicleId, interactiveLinks, locatedVehicles]);
+    }, [focusedVehicleId, interactiveLinks, locatedVehicles, locatedIdsKey]);
 
     return (
         <div className={`relative overflow-hidden rounded-lg border bg-muted ${className}`}>

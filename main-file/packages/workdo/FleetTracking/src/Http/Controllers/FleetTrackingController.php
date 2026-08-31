@@ -10,6 +10,7 @@ use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Workdo\FleetTracking\Models\Vehicle;
+use Workdo\FleetTracking\Models\VehicleAssignment;
 use Workdo\FleetTracking\Services\FleetTrackingService;
 
 class FleetTrackingController extends Controller
@@ -24,13 +25,33 @@ class FleetTrackingController extends Controller
             return back()->with('error', __('Permission denied'));
         }
 
-        return Inertia::render('FleetTracking/Index', [
+        // Only vehicles and summary are read by the page, and the map polls this
+        // route on an interval - anything extra here is re-queried every tick.
+        return Inertia::render('FleetTracking/Index', $this->fleetService->dashboard(creatorId()));
+    }
+
+    /**
+     * The vehicle registry - the day-to-day page.
+     *
+     * Split from `settings()` because the two are visited at very different
+     * rates: vehicles and assignments change constantly, while the intake
+     * endpoints are configured once. Keeping them together buried the registry
+     * under setup panels nobody reads twice.
+     */
+    public function vehicles()
+    {
+        if (!Auth::user()->can('manage-fleet-tracking') && !Auth::user()->can('manage-vehicles')) {
+            return back()->with('error', __('Permission denied'));
+        }
+
+        return Inertia::render('FleetTracking/Vehicles/Index', [
             ...$this->fleetService->dashboard(creatorId()),
             'drivers' => $this->drivers(),
-            'sources' => $this->sources(),
+            'can' => $this->fleetAbilities(),
         ]);
     }
 
+    /** Intake configuration only: the device endpoint and Traccar forwarding. */
     public function settings()
     {
         if (!Auth::user()->can('manage-fleet-tracking') && !Auth::user()->can('manage-vehicles')) {
@@ -38,10 +59,23 @@ class FleetTrackingController extends Controller
         }
 
         return Inertia::render('FleetTracking/Settings', [
-            ...$this->fleetService->dashboard(creatorId()),
-            'drivers' => $this->drivers(),
-            'device_endpoint' => route('fleet-tracking.device-pings.store', [], false),
+            'device_endpoint' => route('fleet-tracking.device-pings.store'),
+            // Only shown to users who may manage the fleet - the secret lets
+            // anyone holding it write positions for this company's vehicles.
+            'traccar' => Auth::user()->can('manage-fleet-tracking') ? [
+                'endpoint' => route('fleet-tracking.traccar.positions'),
+                'secret' => $this->fleetService->traccarSecret(creatorId()),
+            ] : null,
+            'can' => $this->fleetAbilities(),
         ]);
+    }
+
+    private function fleetAbilities(): array
+    {
+        return [
+            'manage_vehicles' => Auth::user()->can('manage-vehicles'),
+            'manage_fleet' => Auth::user()->can('manage-fleet-tracking'),
+        ];
     }
 
     public function storeVehicle(Request $request)
@@ -62,6 +96,13 @@ class FleetTrackingController extends Controller
             'status' => ['required', 'in:active,maintenance,inactive'],
             'gps_device_token' => ['nullable', 'string', 'max:255', 'unique:vehicles,gps_device_token'],
             'gps_device_name' => ['nullable', 'string', 'max:255'],
+            // Traccar's own device id - the IMEI for most hardware trackers.
+            'traccar_unique_id' => [
+                'nullable',
+                'string',
+                'max:255',
+                Rule::unique('vehicles', 'traccar_unique_id'),
+            ],
             'airtag_reference' => ['nullable', 'string', 'max:255'],
             'notes' => ['nullable', 'string', 'max:2000'],
         ]);
@@ -99,6 +140,12 @@ class FleetTrackingController extends Controller
                 Rule::unique('vehicles', 'gps_device_token')->ignore($vehicle->id),
             ],
             'gps_device_name' => ['nullable', 'string', 'max:255'],
+            'traccar_unique_id' => [
+                'nullable',
+                'string',
+                'max:255',
+                Rule::unique('vehicles', 'traccar_unique_id')->ignore($vehicle->id),
+            ],
             'airtag_reference' => ['nullable', 'string', 'max:255'],
             'notes' => ['nullable', 'string', 'max:2000'],
         ]);
@@ -106,6 +153,39 @@ class FleetTrackingController extends Controller
         $this->fleetService->updateVehicle($vehicle, $validated);
 
         return back()->with('success', __('Vehicle updated successfully.'));
+    }
+
+    public function destroyVehicle(Vehicle $vehicle)
+    {
+        if (!Auth::user()->can('manage-vehicles')) {
+            return back()->with('error', __('Permission denied'));
+        }
+        if ($vehicle->created_by !== creatorId()) {
+            return redirect()->route('fleet-tracking.settings')->with('error', __('Permission denied'));
+        }
+
+        try {
+            $this->fleetService->deleteVehicle($vehicle);
+        } catch (ValidationException $exception) {
+            // Row actions have no form to render 422s into — flash is the visible channel.
+            return back()->with('error', collect($exception->errors())->flatten()->first());
+        }
+
+        return back()->with('success', __('Vehicle deleted successfully.'));
+    }
+
+    public function endAssignment(VehicleAssignment $assignment)
+    {
+        if (!Auth::user()->can('manage-fleet-tracking') && !Auth::user()->can('manage-vehicles')) {
+            return back()->with('error', __('Permission denied'));
+        }
+        if ($assignment->created_by !== creatorId()) {
+            return redirect()->route('fleet-tracking.settings')->with('error', __('Permission denied'));
+        }
+
+        $this->fleetService->endAssignment($assignment);
+
+        return back()->with('success', __('Assignment ended successfully.'));
     }
 
     public function storeAssignment(Request $request)
@@ -244,6 +324,48 @@ class FleetTrackingController extends Controller
         ]);
     }
 
+    /**
+     * Receives positions forwarded by a Traccar server.
+     *
+     * Unauthenticated by session - Traccar posts server-to-server - so the
+     * request carries a per-company secret in the `X-Traccar-Secret` header,
+     * set through Traccar's `forward.header` option.
+     *
+     * The vehicle is resolved first, because its company determines which
+     * secret the request has to match; a token that is valid for one tenant
+     * must not be able to move another tenant's vehicles.
+     */
+    public function traccarPosition(Request $request)
+    {
+        $payload = $request->all();
+
+        try {
+            $vehicle = $this->fleetService->vehicleForTraccarPayload($payload);
+        } catch (ValidationException $exception) {
+            return response()->json(['success' => false, 'message' => $exception->getMessage()], 422);
+        }
+
+        $expected = $this->fleetService->traccarSecret((int) $vehicle->created_by);
+        $presented = (string) $request->header('X-Traccar-Secret', '');
+
+        // hash_equals keeps the comparison constant-time; a plain === leaks the
+        // secret one character at a time to anyone who can time the response.
+        if ($presented === '' || !hash_equals($expected, $presented)) {
+            return response()->json(['success' => false, 'message' => __('Invalid Traccar secret.')], 401);
+        }
+
+        try {
+            $ping = $this->fleetService->recordTraccarPosition($payload);
+        } catch (ValidationException $exception) {
+            return response()->json(['success' => false, 'message' => $exception->getMessage()], 422);
+        }
+
+        return response()->json([
+            'success' => true,
+            'ping' => $this->fleetService->pingPayload($ping),
+        ]);
+    }
+
     private function validatePing(Request $request): array
     {
         return $request->validate([
@@ -265,13 +387,4 @@ class FleetTrackingController extends Controller
             ->get(['id', 'name', 'email', 'mobile_no', 'type']);
     }
 
-    private function sources(): array
-    {
-        return [
-            ['value' => FleetTrackingService::MOBILE_SOURCE, 'label' => __('Mobile GPS')],
-            ['value' => FleetTrackingService::DEVICE_SOURCE, 'label' => __('GPS Device')],
-            ['value' => FleetTrackingService::MANUAL_SOURCE, 'label' => __('Manual')],
-            ['value' => FleetTrackingService::AIRTAG_SOURCE, 'label' => __('AirTag Reference')],
-        ];
-    }
 }

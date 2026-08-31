@@ -15,6 +15,7 @@ class Vehicle extends Model
         'status',
         'gps_device_token',
         'gps_device_name',
+        'traccar_unique_id',
         'airtag_reference',
         'notes',
         'last_latitude',

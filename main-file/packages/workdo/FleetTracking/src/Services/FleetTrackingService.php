@@ -6,6 +6,7 @@ use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Workdo\FleetTracking\Models\LocationPing;
 use Workdo\FleetTracking\Models\TrackingSession;
@@ -16,6 +17,10 @@ class FleetTrackingService
 {
     public const MOBILE_SOURCE = 'mobile_gps';
     public const DEVICE_SOURCE = 'gps_device';
+    public const TRACCAR_SOURCE = 'traccar';
+
+    /** Traccar reports speed in knots; the app shows km/h throughout. */
+    public const KNOTS_TO_KMH = 1.852;
     public const MANUAL_SOURCE = 'manual';
     public const AIRTAG_SOURCE = 'airtag_reference';
     public const STALE_AFTER_MINUTES = 10;
@@ -132,6 +137,9 @@ class FleetTrackingService
             'status' => $data['status'] ?? 'active',
             'gps_device_token' => $data['gps_device_token'] ?? null,
             'gps_device_name' => $data['gps_device_name'] ?? null,
+            // Coerced to null: the column is unique, and '' collides with the
+            // next vehicle left blank whereas repeated NULLs do not.
+            'traccar_unique_id' => ($data['traccar_unique_id'] ?? null) ?: null,
             'airtag_reference' => $data['airtag_reference'] ?? null,
             'notes' => $data['notes'] ?? null,
             'creator_id' => $creatorId,
@@ -147,6 +155,7 @@ class FleetTrackingService
             'vehicle_type' => $data['vehicle_type'] ?? $vehicle->vehicle_type,
             'status' => $data['status'] ?? $vehicle->status,
             'gps_device_name' => $data['gps_device_name'] ?? null,
+            'traccar_unique_id' => ($data['traccar_unique_id'] ?? null) ?: null,
             'airtag_reference' => $data['airtag_reference'] ?? null,
             'notes' => $data['notes'] ?? null,
         ];
@@ -158,6 +167,30 @@ class FleetTrackingService
         $vehicle->update($updates);
 
         return $vehicle->fresh(['activeAssignment.driver', 'activeSession.driver']);
+    }
+
+    public function deleteVehicle(Vehicle $vehicle): void
+    {
+        if ($vehicle->activeSession()->exists()) {
+            throw ValidationException::withMessages([
+                'vehicle' => __('Stop the active tracking session before deleting this vehicle.'),
+            ]);
+        }
+
+        // Assignments, sessions and pings cascade at the database level.
+        $vehicle->delete();
+    }
+
+    public function endAssignment(VehicleAssignment $assignment): VehicleAssignment
+    {
+        if ($assignment->status === 'active') {
+            $assignment->update([
+                'status' => 'completed',
+                'ends_at' => now(),
+            ]);
+        }
+
+        return $assignment;
     }
 
     public function createAssignment(array $data, int $companyId, ?int $creatorId = null): VehicleAssignment
@@ -299,6 +332,122 @@ class FleetTrackingService
         return $this->recordPing($vehicle, $session, $driver, $data, self::DEVICE_SOURCE, (int) $vehicle->created_by, null);
     }
 
+    /** Settings key holding a company's Traccar webhook secret. */
+    public const TRACCAR_SECRET_KEY = 'fleet_traccar_secret';
+
+    /**
+     * The company's Traccar webhook secret, generated on first use.
+     *
+     * Stored with `is_public: false`, but note that flag is not sufficient on
+     * its own: `getCompanyAllSetting()` returns private rows too, and its result
+     * is serialised into every page's Inertia props. `HandleInertiaRequests`
+     * strips this key by name - keep the two in step.
+     */
+    public function traccarSecret(int $companyId): string
+    {
+        $secret = company_setting(self::TRACCAR_SECRET_KEY, $companyId);
+
+        if (!$secret) {
+            $secret = Str::random(48);
+            setSetting(self::TRACCAR_SECRET_KEY, $secret, $companyId, false);
+        }
+
+        return $secret;
+    }
+
+    /**
+     * The vehicle a forwarded Traccar payload belongs to.
+     *
+     * Separate from recording so the caller can learn which company owns the
+     * vehicle - and therefore which secret to check - before trusting anything
+     * else in the payload.
+     */
+    public function vehicleForTraccarPayload(array $payload): Vehicle
+    {
+        $uniqueId = (string) ($payload['device']['uniqueId'] ?? '');
+
+        $vehicle = $uniqueId === ''
+            ? null
+            : Vehicle::where('traccar_unique_id', $uniqueId)->first();
+
+        if (!$vehicle) {
+            throw ValidationException::withMessages([
+                'device' => __('No vehicle is linked to Traccar device :id.', ['id' => $uniqueId !== '' ? $uniqueId : '-']),
+            ]);
+        }
+
+        return $vehicle;
+    }
+
+    /**
+     * Record one position forwarded by a Traccar server.
+     *
+     * Traccar posts `{"position": {...}, "device": {...}}` when `forward.type`
+     * is `json`. Its shape differs from our own device endpoint in four ways
+     * that all silently corrupt data if missed:
+     *
+     *  - speed is in knots, while the UI renders km/h
+     *  - the heading field is called `course`
+     *  - battery lives under `position.attributes.batteryLevel`
+     *  - the vehicle is identified by `device.uniqueId`, not by our token
+     *
+     * Unlike `recordDevicePing` this does not require an open work session: a
+     * tracker wired into the van reports whether or not anyone is driving it.
+     * When a session happens to be open the ping is attributed to that driver.
+     */
+    public function recordTraccarPosition(array $payload): LocationPing
+    {
+        $position = $payload['position'] ?? [];
+        $vehicle = $this->vehicleForTraccarPayload($payload);
+
+        if (!isset($position['latitude'], $position['longitude'])) {
+            throw ValidationException::withMessages([
+                'position' => __('The forwarded position has no coordinates.'),
+            ]);
+        }
+
+        // A position Traccar itself flags as invalid is a decode failure or a
+        // stale cell-tower estimate; storing it would jump the vehicle marker.
+        if (array_key_exists('valid', $position) && $position['valid'] === false) {
+            throw ValidationException::withMessages([
+                'position' => __('Traccar reported this position as invalid.'),
+            ]);
+        }
+
+        $attributes = $position['attributes'] ?? [];
+
+        $session = TrackingSession::where('vehicle_id', $vehicle->id)
+            ->where('created_by', $vehicle->created_by)
+            ->where('status', 'active')
+            ->latest()
+            ->first();
+
+        $data = [
+            'latitude' => (float) $position['latitude'],
+            'longitude' => (float) $position['longitude'],
+            'accuracy' => isset($position['accuracy']) ? (float) $position['accuracy'] : null,
+            'speed' => isset($position['speed'])
+                ? round((float) $position['speed'] * self::KNOTS_TO_KMH, 2)
+                : null,
+            // `course` is 0-360 in Traccar, matching our heading column.
+            'heading' => isset($position['course']) ? (float) $position['course'] : null,
+            'battery' => isset($attributes['batteryLevel']) ? (int) $attributes['batteryLevel'] : null,
+            // fixTime is when the GPS got the fix; deviceTime is when the unit
+            // recorded it. Prefer the fix, fall back through to arrival time.
+            'recorded_at' => $position['fixTime'] ?? $position['deviceTime'] ?? $position['serverTime'] ?? null,
+        ];
+
+        return $this->recordPing(
+            $vehicle,
+            $session,
+            $session?->driver,
+            $data,
+            self::TRACCAR_SOURCE,
+            (int) $vehicle->created_by,
+            null
+        );
+    }
+
     public function vehicleStatus(Vehicle $vehicle): string
     {
         if ($vehicle->status !== 'active') {
@@ -309,12 +458,21 @@ class FleetTrackingService
             return 'offline';
         }
 
-        $hasActiveSession = TrackingSession::where('vehicle_id', $vehicle->id)
-            ->where('status', 'active')
-            ->exists();
+        // A phone only reports while the driver has work tracking running, so
+        // for that source an open session is what makes a fix meaningful. A
+        // fitted tracker reports on its own and has no session to check - going
+        // by the session there would pin it to "offline" while it is plainly
+        // still transmitting.
+        $reportsIndependently = in_array($vehicle->last_source, [self::DEVICE_SOURCE, self::TRACCAR_SOURCE], true);
 
-        if (!$hasActiveSession) {
-            return 'offline';
+        if (!$reportsIndependently) {
+            $hasActiveSession = TrackingSession::where('vehicle_id', $vehicle->id)
+                ->where('status', 'active')
+                ->exists();
+
+            if (!$hasActiveSession) {
+                return 'offline';
+            }
         }
 
         return $vehicle->last_ping_at->greaterThanOrEqualTo(now()->subMinutes(self::STALE_AFTER_MINUTES))
@@ -335,6 +493,7 @@ class FleetTrackingService
             'status' => $vehicle->status,
             'tracking_status' => $this->vehicleStatus($vehicle),
             'gps_device_name' => $vehicle->gps_device_name,
+            'traccar_unique_id' => $vehicle->traccar_unique_id,
             'has_device_token' => !empty($vehicle->gps_device_token),
             'airtag_reference' => $vehicle->airtag_reference,
             'notes' => $vehicle->notes,
@@ -346,6 +505,7 @@ class FleetTrackingService
             'last_source' => $vehicle->last_source,
             'last_ping_at' => optional($vehicle->last_ping_at)->toIso8601String(),
             'driver' => $assignment?->driver ? $this->driverPayload($assignment->driver) : ($session?->driver ? $this->driverPayload($session->driver) : null),
+            'active_assignment' => $assignment ? $this->assignmentPayload($assignment) : null,
             'active_session' => $session ? $this->sessionPayload($session) : null,
             'created_at' => optional($vehicle->created_at)->toIso8601String(),
         ];
@@ -425,13 +585,18 @@ class FleetTrackingService
         ];
     }
 
-    private function recordPing(Vehicle $vehicle, TrackingSession $session, ?User $driver, array $data, string $source, int $companyId, ?int $creatorId): LocationPing
+    /**
+     * `$session` is nullable because a vehicle-mounted tracker reports around
+     * the clock, not only while a driver has a work session open. The ping is
+     * still recorded against the vehicle so its position stays current.
+     */
+    private function recordPing(Vehicle $vehicle, ?TrackingSession $session, ?User $driver, array $data, string $source, int $companyId, ?int $creatorId): LocationPing
     {
         $recordedAt = !empty($data['recorded_at']) ? Carbon::parse($data['recorded_at']) : now();
 
         return DB::transaction(function () use ($vehicle, $session, $driver, $data, $source, $companyId, $creatorId, $recordedAt) {
             $ping = LocationPing::create([
-                'tracking_session_id' => $session->id,
+                'tracking_session_id' => $session?->id,
                 'vehicle_id' => $vehicle->id,
                 'driver_id' => $driver?->id,
                 'latitude' => $data['latitude'],
@@ -450,7 +615,7 @@ class FleetTrackingService
                 'created_by' => $companyId,
             ]);
 
-            $session->update([
+            $session?->update([
                 'last_ping_at' => $recordedAt,
             ]);
 
