@@ -7,6 +7,9 @@ Route::middleware(['web', 'auth', 'verified', 'PlanModuleCheck:Zakat'])->prefix(
     Route::get('/', [ZakatController::class, 'index'])->name('index');
     Route::put('/settings', [ZakatController::class, 'updateSettings'])->name('settings.update');
 
+    // JSON, not Inertia: the wizard refreshes its running total in place.
+    Route::post('/preview', [ZakatController::class, 'previewCalculation'])->name('preview');
+
     Route::post('/calculations', [ZakatController::class, 'store'])->name('calculations.store');
     Route::get('/calculations/{calculation}', [ZakatController::class, 'show'])->name('calculations.show');
     Route::post('/calculations/{calculation}/finalize', [ZakatController::class, 'finalize'])->name('calculations.finalize');

@@ -27,6 +27,9 @@ type Calculation = {
     rate_percent: string | number;
     inventory_valuation_method: string;
     liability_due_within_days: number;
+    gold_grams: string | number;
+    gold_price_per_gram: string | number;
+    gold_amount: string | number;
     cash_amount: string | number;
     inventory_amount: string | number;
     receivable_amount: string | number;
@@ -189,6 +192,15 @@ export default function Print() {
                 </div>
 
                 <div className="grid grid-cols-3 gap-4 mb-8">
+                    <div className="border rounded p-4">
+                        <p className="text-xs text-gray-600">{t('Gold you hold')}</p>
+                        <p className="text-lg font-bold">{formatCurrency(calculation.gold_amount)}</p>
+                        {/* The weight and the rate it was valued at, so the figure
+                            can be checked long after the price has moved. */}
+                        <p className="text-xs text-gray-600">
+                            {Number(calculation.gold_grams)} {t('gram')} × {formatCurrency(calculation.gold_price_per_gram)}
+                        </p>
+                    </div>
                     <div className="border rounded p-4">
                         <p className="text-xs text-gray-600">{t('Cash and Bank')}</p>
                         <p className="text-lg font-bold">{formatCurrency(calculation.cash_amount)}</p>

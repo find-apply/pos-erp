@@ -26,6 +26,23 @@ use Workdo\Zakat\Models\ZakatSetting;
 
 class ZakatCalculationService
 {
+    /** A lunar year, the haul window every zakat calculation is measured over. */
+    public const HAUL_DAYS = 354;
+
+    /** Book-derived sections a user may replace with a figure of their own. */
+    public const OVERRIDABLE_SECTIONS = ['cash', 'inventory', 'receivable', 'liability'];
+
+    /** The classic nisab: the value of this much gold. */
+    public const NISAB_GOLD_GRAMS = 85;
+
+    /**
+     * A starting gold price so a company that has never opened the settings
+     * still gets a working threshold instead of a zero, which reads as "no
+     * zakat is ever due". It is a placeholder, not a quoted rate - the wizard
+     * shows it and invites a correction.
+     */
+    public const DEFAULT_GOLD_PRICE_PER_GRAM = 12000;
+
     public function __construct(
         private JournalService $journalService,
         private BankTransactionsService $bankTransactionsService
@@ -40,8 +57,9 @@ class ZakatCalculationService
             ['created_by' => $companyId],
             [
                 'nisab_amount' => 0,
+                'gold_price_per_gram' => self::DEFAULT_GOLD_PRICE_PER_GRAM,
                 'rate_percent' => 2.50,
-                'haul_start_date' => now()->subDays(354)->toDateString(),
+                'haul_start_date' => now()->subDays(self::HAUL_DAYS)->toDateString(),
                 'inventory_valuation_method' => 'sale_price',
                 'liability_due_within_days' => 354,
                 'receivable_policy' => 'collectible',
@@ -57,6 +75,7 @@ class ZakatCalculationService
         $setting = $this->getSettings($companyId);
         $setting->update([
             'nisab_amount' => $this->money($data['nisab_amount'] ?? $setting->nisab_amount),
+            'gold_price_per_gram' => $this->money($data['gold_price_per_gram'] ?? $setting->gold_price_per_gram),
             'rate_percent' => $this->money($data['rate_percent'] ?? $setting->rate_percent),
             'haul_start_date' => $data['haul_start_date'] ?? $setting->haul_start_date,
             'inventory_valuation_method' => $data['inventory_valuation_method'] ?? $setting->inventory_valuation_method,
@@ -97,10 +116,13 @@ class ZakatCalculationService
                 'calculation_date' => $payload['calculation_date'],
                 'haul_start_date' => $payload['haul_start_date'],
                 'nisab_amount' => $payload['nisab_amount'],
+                'gold_grams' => $payload['gold_grams'],
+                'gold_price_per_gram' => $payload['gold_price_per_gram'],
                 'rate_percent' => $payload['rate_percent'],
                 'inventory_valuation_method' => $payload['inventory_valuation_method'],
                 'liability_due_within_days' => $payload['liability_due_within_days'],
                 'receivable_policy' => $payload['receivable_policy'],
+                'gold_amount' => $summary['gold_amount'],
                 'cash_amount' => $summary['cash_amount'],
                 'inventory_amount' => $summary['inventory_amount'],
                 'receivable_amount' => $summary['receivable_amount'],
@@ -248,7 +270,7 @@ class ZakatCalculationService
             'lines' => $calculation->lines->groupBy('direction'),
             'payments' => $calculation->payments,
             'guidance' => $this->guidance(),
-            'formula' => __('Cash and bank + trade inventory + collectible receivables + additions - due liabilities - deductions = zakatable base.'),
+            'formula' => __('Gold + cash and bank + trade inventory + collectible receivables + additions - due liabilities - deductions = zakatable base.'),
         ];
     }
 
@@ -281,34 +303,132 @@ class ZakatCalculationService
     private function payloadFromInput(array $data, ZakatSetting $settings): array
     {
         $calculationDate = $data['calculation_date'] ?? now()->toDateString();
-        $haulStartDate = $data['haul_start_date'] ?? optional($settings->haul_start_date)->toDateString() ?? now()->subDays(354)->toDateString();
+        $haulStartDate = $data['haul_start_date'] ?? optional($settings->haul_start_date)->toDateString() ?? now()->subDays(self::HAUL_DAYS)->toDateString();
 
         return [
             'calculation_date' => Carbon::parse($calculationDate)->toDateString(),
             'haul_start_date' => Carbon::parse($haulStartDate)->toDateString(),
-            'nisab_amount' => $this->money($data['nisab_amount'] ?? $settings->nisab_amount),
+            'nisab_amount' => $this->money($data['nisab_amount'] ?? $this->defaultNisab($settings)),
+            'gold_grams' => max(0, round((float) ($data['gold_grams'] ?? 0), 3)),
+            'gold_price_per_gram' => $this->money($data['gold_price_per_gram'] ?? $settings->gold_price_per_gram),
             'rate_percent' => $this->money($data['rate_percent'] ?? $settings->rate_percent),
             'inventory_valuation_method' => $data['inventory_valuation_method'] ?? $settings->inventory_valuation_method,
             'liability_due_within_days' => (int) ($data['liability_due_within_days'] ?? $settings->liability_due_within_days),
             'receivable_policy' => $data['receivable_policy'] ?? $settings->receivable_policy,
             'adjustments' => $this->cleanAdjustments($data['adjustments'] ?? []),
+            'overrides' => $this->cleanOverrides($data['overrides'] ?? []),
         ];
+    }
+
+    /**
+     * The nisab is the value of 85 grams of gold, so a company that has never
+     * set one is not stuck at zero - the stored gold price stands in for it.
+     */
+    private function defaultNisab(ZakatSetting $settings): float
+    {
+        if ((float) $settings->nisab_amount > 0) {
+            return (float) $settings->nisab_amount;
+        }
+
+        return $this->money((float) $settings->gold_price_per_gram * self::NISAB_GOLD_GRAMS);
     }
 
     private function buildLines(array $payload, int $companyId): array
     {
+        $overrides = $payload['overrides'] ?? [];
+
         return array_values(array_merge(
-            $this->cashLines($companyId),
-            $this->inventoryLines($payload, $companyId),
-            $this->receivableLines($payload, $companyId),
-            $this->liabilityLines($payload, $companyId),
+            $this->goldLines($payload),
+            $this->sectionLines('cash', $overrides, fn () => $this->cashLines($companyId)),
+            $this->sectionLines('inventory', $overrides, fn () => $this->inventoryLines($payload, $companyId)),
+            $this->sectionLines('receivable', $overrides, fn () => $this->receivableLines($payload, $companyId)),
+            $this->sectionLines('liability', $overrides, fn () => $this->liabilityLines($payload, $companyId)),
             $this->adjustmentLines($payload['adjustments'] ?? [])
         ));
+    }
+
+    /**
+     * A hand-entered figure replaces its whole section rather than sitting
+     * beside it, so the saved lines still add up to the summary and the report
+     * shows one auditable row instead of a book total quietly contradicted.
+     *
+     * Cash is the clearest case: overriding it also drops any bank overdraft
+     * line, because the number the user typed is the net cash they are
+     * declaring, not a gross figure still awaiting deductions.
+     */
+    /**
+     * Gold is entered by weight rather than value: the owner knows the grams,
+     * and the price is a moving figure the calculation has to pin down. Both
+     * end up on the line so the snapshot stays reproducible.
+     */
+    private function goldLines(array $payload): array
+    {
+        $grams = (float) ($payload['gold_grams'] ?? 0);
+        $price = (float) ($payload['gold_price_per_gram'] ?? 0);
+
+        if ($grams <= 0 || $price <= 0) {
+            return [];
+        }
+
+        return [[
+            'line_type' => 'gold',
+            'source_table' => null,
+            'source_id' => null,
+            'title' => __(':grams grams of gold', ['grams' => rtrim(rtrim(number_format($grams, 3, '.', ''), '0'), '.')]),
+            'description' => null,
+            'explanation' => __('Gold held as wealth is zakatable, valued at the gold price entered for this calculation.'),
+            'quantity' => $grams,
+            'unit_value' => $price,
+            'amount' => $this->money($grams * $price),
+            'direction' => 'asset',
+            'is_included' => true,
+            'metadata' => ['gold_price_per_gram' => $price],
+        ]];
+    }
+
+    private function sectionLines(string $section, array $overrides, callable $computed): array
+    {
+        if (!array_key_exists($section, $overrides)) {
+            return $computed();
+        }
+
+        return [[
+            'line_type' => $section,
+            'source_table' => null,
+            'source_id' => null,
+            'title' => __('Manually entered value'),
+            'description' => null,
+            'explanation' => __('Entered by hand during the calculation, replacing the value read from the books.'),
+            'quantity' => null,
+            'unit_value' => null,
+            'amount' => $overrides[$section],
+            'direction' => $section === 'liability' ? 'deduction' : 'asset',
+            'is_included' => true,
+            'metadata' => ['overridden' => true],
+        ]];
+    }
+
+    /**
+     * Only sections the user actually touched are overridden - a missing key
+     * means "read it from the books", which is not the same as a zero.
+     */
+    private function cleanOverrides(array $overrides): array
+    {
+        $clean = [];
+
+        foreach (self::OVERRIDABLE_SECTIONS as $section) {
+            if (array_key_exists($section, $overrides) && is_numeric($overrides[$section])) {
+                $clean[$section] = max(0, $this->money($overrides[$section]));
+            }
+        }
+
+        return $clean;
     }
 
     private function summarizeLines(array $lines, array $payload): array
     {
         $summary = [
+            'gold_amount' => 0,
             'cash_amount' => 0,
             'inventory_amount' => 0,
             'receivable_amount' => 0,
@@ -324,6 +444,7 @@ class ZakatCalculationService
 
             $amount = (float) $line['amount'];
             match ($line['line_type']) {
+                'gold' => $summary['gold_amount'] += $amount,
                 'cash' => $summary['cash_amount'] += $amount,
                 'inventory' => $summary['inventory_amount'] += $amount,
                 'receivable' => $summary['receivable_amount'] += $amount,
@@ -334,7 +455,8 @@ class ZakatCalculationService
             };
         }
 
-        $zakatable = $summary['cash_amount']
+        $zakatable = $summary['gold_amount']
+            + $summary['cash_amount']
             + $summary['inventory_amount']
             + $summary['receivable_amount']
             + $summary['manual_additions_amount']
@@ -349,7 +471,8 @@ class ZakatCalculationService
         // rather than letting the UI report "below nisab" for an unset value.
         $isNisabConfigured = (float) $payload['nisab_amount'] > 0;
         $isNisabMet = $isNisabConfigured && $zakatable >= (float) $payload['nisab_amount'];
-        $isHaulMet = Carbon::parse($payload['haul_start_date'])->lte(Carbon::parse($payload['calculation_date'])->subDays(354));
+        $haulCompleteDate = Carbon::parse($payload['haul_start_date'])->addDays(self::HAUL_DAYS);
+        $isHaulMet = $haulCompleteDate->lte(Carbon::parse($payload['calculation_date']));
         $zakatDue = ($isNisabMet && $isHaulMet) ? $this->money($zakatable * ((float) $payload['rate_percent'] / 100)) : 0;
 
         return array_merge($summary, [
@@ -358,6 +481,9 @@ class ZakatCalculationService
             'is_nisab_configured' => $isNisabConfigured,
             'is_nisab_met' => $isNisabMet,
             'is_haul_met' => $isHaulMet,
+            // Surfaced so the wizard can say when the haul completes instead of
+            // restating the 354-day rule in the browser.
+            'haul_complete_date' => $haulCompleteDate->toDateString(),
         ]);
     }
 

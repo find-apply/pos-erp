@@ -40,7 +40,30 @@ class ZakatController extends Controller
             'preview' => $preview,
             'calculations' => $calculations,
             'guidance' => $this->zakatService->guidance(),
+            'abilities' => [
+                'create' => Auth::user()->can('create-zakat-calculations'),
+                'manageSettings' => Auth::user()->can('manage-zakat-settings'),
+            ],
         ]);
+    }
+
+    /**
+     * Recompute the preview for the values currently in the wizard.
+     *
+     * The wizard shows a running zakat figure on every step, and several inputs
+     * (valuation method, receivable policy, liability window) change which rows
+     * the service includes - so the numbers cannot be derived in the browser
+     * without restating the whole formula there. This keeps one implementation.
+     */
+    public function previewCalculation(Request $request)
+    {
+        if (!Auth::user()->can('manage-zakat')) {
+            abort(403);
+        }
+
+        $validated = $request->validate($this->calculationRules());
+
+        return response()->json($this->zakatService->preview($validated));
     }
 
     public function updateSettings(Request $request)
@@ -51,6 +74,7 @@ class ZakatController extends Controller
 
         $validated = $request->validate([
             'nisab_amount' => ['required', 'numeric', 'min:0'],
+            'gold_price_per_gram' => ['nullable', 'numeric', 'min:0'],
             'rate_percent' => ['required', 'numeric', 'min:0', 'max:100'],
             'haul_start_date' => ['nullable', 'date'],
             'inventory_valuation_method' => ['required', 'in:sale_price,purchase_price'],
@@ -70,21 +94,20 @@ class ZakatController extends Controller
             return back()->with('error', __('Permission denied'));
         }
 
-        $validated = $request->validate([
-            'calculation_date' => ['required', 'date'],
-            'haul_start_date' => ['nullable', 'date'],
-            'nisab_amount' => ['required', 'numeric', 'min:0'],
-            'rate_percent' => ['required', 'numeric', 'min:0', 'max:100'],
-            'inventory_valuation_method' => ['required', 'in:sale_price,purchase_price'],
-            'liability_due_within_days' => ['required', 'integer', 'min:0', 'max:3650'],
-            'receivable_policy' => ['required', 'in:collectible,all,paid_only'],
+        $validated = $request->validate($this->calculationRules() + [
             'notes' => ['nullable', 'string', 'max:5000'],
-            'adjustments' => ['nullable', 'array'],
-            'adjustments.*.adjustment_type' => ['nullable', 'in:addition,deduction,exclusion'],
-            'adjustments.*.title' => ['nullable', 'string', 'max:255'],
-            'adjustments.*.amount' => ['nullable', 'numeric', 'min:0'],
-            'adjustments.*.reason' => ['nullable', 'string', 'max:1000'],
+            'save_as_defaults' => ['nullable', 'boolean'],
+            // Not calculation inputs - carried only so completing the wizard
+            // can save them as defaults.
+            'show_guidance' => ['nullable', 'boolean'],
         ]);
+
+        // The wizard collects the same values the settings form used to, so
+        // completing it can carry them forward instead of making the user
+        // retype nisab and haul on the next run.
+        if ($request->boolean('save_as_defaults') && Auth::user()->can('manage-zakat-settings')) {
+            $this->zakatService->updateSettings($validated);
+        }
 
         $calculation = $this->zakatService->createCalculation($validated);
 
@@ -165,5 +188,42 @@ class ZakatController extends Controller
         }
 
         return back()->with('success', __('Zakat payment recorded successfully.'));
+    }
+
+    /** Inputs that define a zakat snapshot, shared by the preview and the save. */
+    private function calculationRules(): array
+    {
+        return [
+            'calculation_date' => ['required', 'date'],
+            'haul_start_date' => ['nullable', 'date'],
+            'nisab_amount' => ['required', 'numeric', 'min:0'],
+            'gold_grams' => ['nullable', 'numeric', 'min:0'],
+            'gold_price_per_gram' => ['nullable', 'numeric', 'min:0'],
+            'rate_percent' => ['required', 'numeric', 'min:0', 'max:100'],
+            'inventory_valuation_method' => ['required', 'in:sale_price,purchase_price'],
+            'liability_due_within_days' => ['required', 'integer', 'min:0', 'max:3650'],
+            'receivable_policy' => ['required', 'in:collectible,all,paid_only'],
+            'adjustments' => ['nullable', 'array'],
+            'adjustments.*.adjustment_type' => ['nullable', 'in:addition,deduction,exclusion'],
+            'adjustments.*.title' => ['nullable', 'string', 'max:255'],
+            'adjustments.*.amount' => ['nullable', 'numeric', 'min:0'],
+            'adjustments.*.reason' => ['nullable', 'string', 'max:1000'],
+            'overrides' => ['nullable', 'array'],
+        ] + $this->overrideRules();
+    }
+
+    /**
+     * One rule per overridable section, derived from the service's own list so
+     * adding a section there cannot leave an unvalidated field here.
+     */
+    private function overrideRules(): array
+    {
+        $rules = [];
+
+        foreach (ZakatCalculationService::OVERRIDABLE_SECTIONS as $section) {
+            $rules["overrides.{$section}"] = ['nullable', 'numeric', 'min:0'];
+        }
+
+        return $rules;
     }
 }

@@ -35,6 +35,9 @@ type Calculation = {
     rate_percent: string | number;
     inventory_valuation_method: string;
     liability_due_within_days: number;
+    gold_grams: string | number;
+    gold_price_per_gram: string | number;
+    gold_amount: string | number;
     cash_amount: string | number;
     inventory_amount: string | number;
     receivable_amount: string | number;
@@ -229,7 +232,7 @@ export default function Show() {
                             <div className="rounded-lg border bg-card p-4">
                                 <p className="text-sm text-muted-foreground">{t('Assets Before Deductions')}</p>
                                 <p className="text-xl font-semibold tabular-nums">
-                                    {formatCurrency(Number(calculation.cash_amount) + Number(calculation.inventory_amount) + Number(calculation.receivable_amount) + Number(calculation.manual_additions_amount))}
+                                    {formatCurrency(Number(calculation.gold_amount) + Number(calculation.cash_amount) + Number(calculation.inventory_amount) + Number(calculation.receivable_amount) + Number(calculation.manual_additions_amount))}
                                 </p>
                             </div>
                             <div className="rounded-lg border bg-card p-4">
