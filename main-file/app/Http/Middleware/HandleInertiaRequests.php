@@ -73,13 +73,30 @@ class HandleInertiaRequests extends Middleware
             ],
             'packages' => (new Module())->allModules(),
             'adminAllSetting' =>   $request->user() ?  getAdminAllSetting() : getAdminAllSetting(true),
-            'companyAllSetting' => $request->user() ? getCompanyAllSetting($request->user()->id) : [],
+            'companyAllSetting' => $request->user() ? $this->withoutSecrets(getCompanyAllSetting($request->user()->id)) : [],
             'imageUrlPrefix' =>  getImageUrlPrefix(),
             'baseUrl' => url('/'),
             'currencies' => config('default_currency.currencies', []),
             'defaultLanguages' => $defaultLanguages,
             'is_demo' => config('app.is_demo', false),
         ];
+    }
+
+    /**
+     * Settings that must never reach the browser.
+     *
+     * `companyAllSetting` is serialised into the props of every page, and
+     * `getCompanyAllSetting()` defaults to returning private rows too - so the
+     * `is_public` flag alone does not keep a value server-side. Anything used
+     * to authenticate an inbound request belongs here.
+     */
+    private function withoutSecrets(array $settings): array
+    {
+        // Literal keys, not package constants: core must not depend on a
+        // package that may be absent.
+        return array_diff_key($settings, array_flip([
+            'fleet_traccar_secret',
+        ]));
     }
 
     public function onException($request, $exception)
