@@ -48,6 +48,8 @@ const RULES: Record<string, SectionKey> = {
     // DISTRIBUTION
     FleetTracking: 'DISTRIBUTION',
     'fleet-tracking': 'DISTRIBUTION',
+    Distribution: 'DISTRIBUTION',
+    distribution: 'DISTRIBUTION',
 
     // FINANCE
     Zakat: 'FINANCE',
@@ -97,6 +99,7 @@ const PATH_RULES: Array<[string, SectionKey]> = [
     ['/pos', 'COMMERCE'],
     ['/product', 'COMMERCE'],
 
+    ['/distribution', 'DISTRIBUTION'],
     ['/fleet-tracking', 'DISTRIBUTION'],
     ['/warehouse', 'DISTRIBUTION'],
     ['/transfer', 'DISTRIBUTION'],

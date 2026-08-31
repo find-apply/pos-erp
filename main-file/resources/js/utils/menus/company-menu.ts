@@ -1,4 +1,4 @@
-import { LayoutGrid, Users, Warehouse,ArrowRightLeft, Package, Tag, Tags, Shield, Settings, Image, Headphones, ShoppingCart, Kanban, Calendar, MessageCircle, Replace ,Receipt} from 'lucide-react';
+import { LayoutGrid, Users, Warehouse, Package, Tag, Tags, Shield, Settings, Image, Headphones, ShoppingCart, Kanban, Calendar, MessageCircle, Replace ,Receipt} from 'lucide-react';
 import { NavItem } from '@/types';
 
 export const getCompanyMenu = (t: (key: string) => string): NavItem[] => [
@@ -68,18 +68,18 @@ export const getCompanyMenu = (t: (key: string) => string): NavItem[] => [
                 href: route('purchase-returns.index'),
                 permission: 'manage-purchase-return-invoices',
             },
-            {
-                title: t('Warehouses'),
-                href: route('warehouses.index'),
-                permission: 'manage-warehouses',
-            },
-            {
-                title: t('Transfers'),
-                href: route('transfers.index'),
-                permission: 'manage-transfers',
-            },
         ],
     },
+    {
+        title: t('Warehouses'),
+        href: route('warehouses.index'),
+        icon: Warehouse,
+        permission: 'manage-warehouses',
+        order: 420,
+    },
+    // Transfers is hidden from the sidebar. The page still works at /transfers -
+    // restore it with route('transfers.index'), the ArrowRightLeft icon, the
+    // 'manage-transfers' permission and order 430.
     {
         title: t('Media Library'),
         href: route('media-library'),

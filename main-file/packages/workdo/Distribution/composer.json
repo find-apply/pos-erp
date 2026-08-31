@@ -1,0 +1,22 @@
+{
+    "name": "workdo/distribution",
+    "description": "Distribution module: delivery notes, rounds, driver performance",
+    "autoload": {
+        "psr-4": {
+            "Workdo\\Distribution\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Workdo",
+            "email": "support@workdo.io"
+        }
+    ],
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Workdo\\Distribution\\Providers\\DistributionServiceProvider"
+            ]
+        }
+    }
+}

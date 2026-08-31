@@ -1,0 +1,11 @@
+{
+    "name": "Distribution",
+    "alias": "Distribution",
+    "description": "Delivery notes, driver rounds, cash-on-delivery collection and distribution performance.",
+    "priority": 250,
+    "version": 1.0,
+    "monthly_price": 0,
+    "yearly_price": 0,
+    "parent_module": [],
+    "package_name": "distribution"
+}
