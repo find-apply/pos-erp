@@ -3,6 +3,7 @@
 import {
   BadgeCheck,
   ChevronsUpDown,
+  Settings,
   LogOut,
   Moon,
   Sun,
@@ -86,6 +87,16 @@ export function NavUser({
                 </Link>
               </DropdownMenuItem>
             )}
+            {/* Settings has no sidebar entry for company accounts, so this
+                is its only way in. */}
+            {auth.user?.permissions?.includes('manage-settings') && (
+              <DropdownMenuItem asChild>
+                <Link href={route('settings.index')}>
+                  <Settings className="mr-2 h-4 w-4" />
+                  {t('Settings')}
+                </Link>
+              </DropdownMenuItem>
+            )}
           </DropdownMenuGroup>
           <DropdownMenuSeparator />
           <DropdownMenuItem asChild>
@@ -150,6 +161,16 @@ export function NavUser({
                   <Link href={route('profile.edit')}>
                     <BadgeCheck className="mr-2 h-4 w-4" />
                     {t('Edit Profile')}
+                  </Link>
+                </DropdownMenuItem>
+              )}
+              {/* Settings has no sidebar entry for company accounts, so this
+                  is its only way in. */}
+              {auth.user?.permissions?.includes('manage-settings') && (
+                <DropdownMenuItem asChild>
+                  <Link href={route('settings.index')}>
+                    <Settings className="mr-2 h-4 w-4" />
+                    {t('Settings')}
                   </Link>
                 </DropdownMenuItem>
               )}

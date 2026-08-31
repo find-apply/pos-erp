@@ -270,7 +270,7 @@ export default function Index() {
                     <TooltipProvider>
                         <Tooltip delayDuration={0}>
                             <TooltipTrigger asChild>
-                                <Button variant="ghost" size="sm" onClick={() => router.get(route('project.tasks.view', task.id))} className="h-8 w-8 p-0 text-green-600 hover:text-green-700">
+                                <Button variant="ghost" size="sm" onClick={() => router.get(route('project.tasks.show', task.id))} className="h-8 w-8 p-0 text-green-600 hover:text-green-700">
                                     <Eye className="h-4 w-4" />
                                 </Button>
                             </TooltipTrigger>
@@ -579,7 +579,7 @@ export default function Index() {
                                                             {auth.user?.permissions?.includes('view-project-task') && (
                                                                 <Tooltip delayDuration={300}>
                                                                     <TooltipTrigger asChild>
-                                                                        <Button variant="ghost" size="sm" onClick={() => router.get(route('project.tasks.view', task.id))} className="h-8 w-8 p-0 text-green-600">
+                                                                        <Button variant="ghost" size="sm" onClick={() => router.get(route('project.tasks.show', task.id))} className="h-8 w-8 p-0 text-green-600">
                                                                             <Eye className="h-4 w-4" />
                                                                         </Button>
                                                                     </TooltipTrigger>

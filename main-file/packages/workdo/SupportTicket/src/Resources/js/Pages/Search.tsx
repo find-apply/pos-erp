@@ -20,7 +20,7 @@ export default function SearchPage({ workspace }: SearchProps) {
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        post(route('ticket.search', workspace.slug));
+        post(route('support-ticket.search.post', workspace.slug));
     };
 
     return (
