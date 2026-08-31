@@ -28,6 +28,9 @@ class AuthenticatedSessionController extends Controller
             'status' => session('status'),
             'enableRegistration' => $enableRegistration === 'on',
             'isDemo' => config('app.is_demo', false),
+            // Reveals the existing Quick Access buttons without switching on
+            // the rest of demo mode, which also rewires theme handling.
+            'demoLogins' => config('app.demo_logins', false),
         ]);
     }
 
@@ -128,6 +131,7 @@ class AuthenticatedSessionController extends Controller
 
         return ['query' => $ip];
     }
+
 
 
 }

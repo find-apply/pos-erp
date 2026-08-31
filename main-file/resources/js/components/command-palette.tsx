@@ -23,7 +23,11 @@ interface Entry {
  * pages the current user can actually reach. Filtering and keyboard handling
  * are implemented here - the ui/command primitives are presentation only.
  */
-export function CommandPalette() {
+/**
+ * @param variant "bar" is the wide search field for the header on desktop;
+ *                "icon" is the compact button shown where there is no room.
+ */
+export function CommandPalette({ variant = 'bar' }: { variant?: 'bar' | 'icon' } = {}) {
     const { t } = useTranslation();
     const [open, setOpen] = useState(false);
     const [query, setQuery] = useState('');
@@ -106,20 +110,31 @@ export function CommandPalette() {
 
     return (
         <>
-            <button
-                type="button"
-                onClick={() => setOpen(true)}
-                className="flex w-full max-w-xs items-center gap-2 rounded-lg border border-gray-200 bg-gray-50 px-3 py-1.5 text-sm text-gray-400 transition-colors hover:bg-gray-100 dark:border-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700"
-            >
-                <Search className="h-3.5 w-3.5 shrink-0" />
-                <span className="flex-1 truncate text-start">{t('Search...')}</span>
-                <kbd
-                    dir="ltr"
-                    className="hidden shrink-0 rounded border border-gray-300 px-1.5 text-[10px] text-gray-500 sm:inline dark:border-slate-600"
+            {variant === 'icon' ? (
+                <button
+                    type="button"
+                    onClick={() => setOpen(true)}
+                    aria-label={t('Search...')}
+                    className="flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
                 >
-                    ⌘K
-                </kbd>
-            </button>
+                    <Search className="h-4 w-4" />
+                </button>
+            ) : (
+                <button
+                    type="button"
+                    onClick={() => setOpen(true)}
+                    className="flex h-8 w-full max-w-sm items-center gap-2 rounded-lg border border-border bg-muted/40 px-3 text-sm text-muted-foreground transition-colors hover:bg-muted"
+                >
+                    <Search className="h-3.5 w-3.5 shrink-0" />
+                    <span className="flex-1 truncate text-start">{t('Search...')}</span>
+                    <kbd
+                        dir="ltr"
+                        className="hidden shrink-0 rounded border border-border bg-background px-1.5 font-mono text-[10px] leading-4 text-muted-foreground sm:inline"
+                    >
+                        ⌘K
+                    </kbd>
+                </button>
+            )}
 
             <Dialog open={open} onOpenChange={setOpen}>
                 <DialogContent className="overflow-hidden p-0 sm:max-w-lg">

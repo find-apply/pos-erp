@@ -72,66 +72,75 @@ function AuthenticatedLayoutContent({
                 style={{ direction: settings.layoutDirection === 'rtl' ? 'rtl' : 'ltr' }}
                 dir={settings.layoutDirection === 'rtl' ? 'rtl' : 'ltr'}
             >
-                <header
-                    className={`bg-background flex h-12 shrink-0 items-center gap-2 px-4 py-1 border-b mb-2 justify-between`}
-                    >
-                    {/* Sidebar + Breadcrumb */}
-                    <div className={`flex items-center gap-2 ${ settings.layoutDirection === "rtl" ? "order-2 flex-row-reverse" : "order-1" }`} >
-                        {/* SidebarTrigger */}
-                        <SidebarTrigger className={`-ml-1 ${ settings.layoutDirection === "rtl" ? "order-3" : "order-1" }`} />
+                {/*
+                  * The shell already sets `dir`, so flexbox lays this row out
+                  * in the right order on its own. The previous `order-*` /
+                  * `flex-row-reverse` branching fought that and had to be kept
+                  * in sync by hand for every new control.
+                  */}
+                <header className="sticky top-0 z-30 mb-2 flex h-14 shrink-0 items-center gap-3 border-b bg-background/95 px-4 backdrop-blur supports-[backdrop-filter]:bg-background/80">
+                    {/* Sidebar toggle + breadcrumb */}
+                    <div className="flex min-w-0 items-center gap-2">
+                        <SidebarTrigger className="h-8 w-8 shrink-0" />
+                        <Separator orientation="vertical" className="h-4 shrink-0" />
 
-                        {/* Separator */}
-                        <Separator orientation="vertical" className="mr-2 h-4 order-2" />
-
-                        {/* Breadcrumb */}
-                        <Breadcrumb className={`${ settings.layoutDirection === "rtl" ? "order-1" : "order-3" }`} >
-                            <BreadcrumbList className={`flex ${ settings.layoutDirection === "rtl" ? "justify-end" : "justify-start" }`} >
-                            <BreadcrumbItem>
-                                <BreadcrumbLink asChild>
-                                    <Link href={route("dashboard")}>{t('Dashboard')}</Link>
-                                </BreadcrumbLink>
-                            </BreadcrumbItem>
-                            {breadcrumbs?.map((crumb, index) => (
-                                <Fragment key={index}>
-                                <BreadcrumbSeparator className={settings.layoutDirection === 'rtl' ? 'rotate-180' : ''} />
-                                <BreadcrumbItem>
-                                    {crumb.url ? (
+                        <Breadcrumb className="min-w-0">
+                            <BreadcrumbList className="flex-nowrap">
+                                <BreadcrumbItem className="hidden shrink-0 sm:inline-flex">
                                     <BreadcrumbLink asChild>
-                                        <Link href={crumb.url}>{crumb.label}</Link>
+                                        <Link href={route("dashboard")}>{t('Dashboard')}</Link>
                                     </BreadcrumbLink>
-                                    ) : (
-                                    <BreadcrumbPage>{crumb.label}</BreadcrumbPage>
-                                    )}
                                 </BreadcrumbItem>
-                                </Fragment>
-                            ))}
+
+                                {breadcrumbs?.map((crumb, index) => {
+                                    // On narrow screens only the current page is
+                                    // kept, so a deep path cannot squeeze out the
+                                    // header controls.
+                                    const isLast = index === breadcrumbs.length - 1;
+
+                                    return (
+                                        <Fragment key={index}>
+                                            <BreadcrumbSeparator className="hidden shrink-0 rtl:rotate-180 sm:block" />
+                                            <BreadcrumbItem className={isLast ? 'min-w-0' : 'hidden shrink-0 sm:inline-flex'}>
+                                                {crumb.url ? (
+                                                    <BreadcrumbLink asChild>
+                                                        <Link href={crumb.url} className="truncate">{crumb.label}</Link>
+                                                    </BreadcrumbLink>
+                                                ) : (
+                                                    <BreadcrumbPage className="truncate">{crumb.label}</BreadcrumbPage>
+                                                )}
+                                            </BreadcrumbItem>
+                                        </Fragment>
+                                    );
+                                })}
                             </BreadcrumbList>
                         </Breadcrumb>
                     </div>
 
                     {/* Global search - opens with Cmd/Ctrl-K */}
-                    <div className="mx-4 hidden min-w-0 flex-1 justify-center md:flex">
+                    <div className="hidden min-w-0 flex-1 justify-center md:flex">
                         <CommandPalette />
                     </div>
 
-                    {/* NavUser */}
-                    <div
-                        className={`flex items-center gap-2 ${
-                        settings.layoutDirection === "rtl" ? "order-1 flex-row-reverse" : "order-2"
-                        }`}
-                    >
-                        {/* Leave Impersonation Button */}
+                    {/* Actions. `ms-auto` pins them to the inline end once the
+                        centre search is hidden on small screens. */}
+                    <div className="ms-auto flex shrink-0 items-center gap-1 md:ms-0">
                         {auth.impersonating && (
                             <Button
                                 variant="outline"
                                 size="sm"
                                 onClick={() => router.post(route('users.leave-impersonation'))}
-                                className="text-orange-600 border-orange-600 hover:bg-orange-50"
+                                className="h-8 border-orange-600 text-orange-600 hover:bg-orange-50 dark:hover:bg-orange-500/10"
                             >
-                                <UserX className="h-4 w-4 mr-2" />
-                                {t('Leave Login As User')}
+                                <UserX className="me-2 h-4 w-4" />
+                                <span className="hidden sm:inline">{t('Leave Login As User')}</span>
                             </Button>
                         )}
+
+                        <div className="md:hidden">
+                            <CommandPalette variant="icon" />
+                        </div>
+
                         <ThemeToggle />
                         <NavUser user={auth.user} inHeader={true} />
                     </div>

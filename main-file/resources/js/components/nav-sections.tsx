@@ -1,5 +1,5 @@
 import { Link, usePage } from '@inertiajs/react';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { ChevronDown } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { NavItem } from '@/types';
@@ -29,14 +29,38 @@ export function NavSections({ items = [], searchQuery = '' }: { items: NavItem[]
         }
     };
 
-    const isActive = (item: NavItem): boolean => {
-        const path = toPath(item.href);
-        if (path && (currentPath === path || currentPath.startsWith(path + '/'))) return true;
-        return (item.activePaths ?? []).some((p) => {
-            const check = toPath(p);
-            return currentPath === check || currentPath.startsWith(check + '/');
-        });
-    };
+    /** Every path an entry can claim: its own href plus any extra activePaths. */
+    const itemPaths = (item: NavItem): string[] =>
+        [item.href, ...(item.activePaths ?? [])].map(toPath).filter(Boolean);
+
+    /**
+     * How well a path claims the current URL: its length when it matches
+     * exactly or as a parent segment, 0 otherwise.
+     */
+    const matchLength = (path: string): number =>
+        currentPath === path || currentPath.startsWith(path + '/') ? path.length : 0;
+
+    /**
+     * The deepest claim any entry makes on this URL. Prefix matching keeps
+     * detail pages (/distribution/rounds/12) highlighting their list entry,
+     * but without picking a single winner /distribution would light up
+     * alongside /distribution/drivers, since both prefix-match.
+     */
+    const bestMatch = useMemo(() => {
+        let best = 0;
+        const walk = (list: NavItem[]) =>
+            list.forEach((item) => {
+                itemPaths(item).forEach((p) => {
+                    best = Math.max(best, matchLength(p));
+                });
+                walk(item.children ?? []);
+            });
+        walk(items);
+        return best;
+    }, [items, currentPath]);
+
+    const isActive = (item: NavItem): boolean =>
+        bestMatch > 0 && itemPaths(item).some((p) => matchLength(p) === bestMatch);
 
     const hasActiveChild = (item: NavItem): boolean =>
         (item.children ?? []).some((child) => isActive(child) || hasActiveChild(child));
@@ -48,7 +72,13 @@ export function NavSections({ items = [], searchQuery = '' }: { items: NavItem[]
     };
 
     const visible = items.filter((item) => matches(item, searchQuery));
-    const sections = groupIntoSections(visible);
+
+    // GENERAL is platform-level housekeeping, kept out of the company sidebar.
+    // Settings still reaches it from the avatar menu, so nothing is stranded.
+    const isSuperAdmin = ((page.props as any)?.auth?.user?.roles ?? []).includes('superadmin');
+    const sections = groupIntoSections(visible).filter(
+        (section) => isSuperAdmin || section.key !== 'GENERAL'
+    );
 
     const itemClasses = (active: boolean) =>
         cn(

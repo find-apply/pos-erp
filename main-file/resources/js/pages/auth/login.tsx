@@ -17,11 +17,13 @@ export default function Login({
     canResetPassword,
     enableRegistration,
     isDemo = false,
+    demoLogins = false,
 }: {
     status?: string;
     canResetPassword: boolean;
     enableRegistration?: boolean;
     isDemo?: boolean;
+    demoLogins?: boolean;
 }) {
     const { t } = useTranslation();
     const { data, setData, post, processing, errors, reset } = useForm({
@@ -167,6 +169,7 @@ export default function Login({
                         {processing ? 'Loading...' : t('SIGN IN')}
                     </Button>
 
+
                     {loginButtons.length > 0 && (
                         <>
                             {/* Divider */}
@@ -218,7 +221,7 @@ export default function Login({
                     </Link>
                 </div>
 
-                {isDemo && (
+                {(isDemo || demoLogins) && (
                     <div className="mt-5">
                         <div className="flex items-center">
                             <div className="flex-1 h-px bg-gray-200 dark:bg-gray-600"></div>
@@ -228,49 +231,19 @@ export default function Login({
                     </div>
                 )}
 
-                {isDemo && (
+                {(isDemo || demoLogins) && (
                     <div>
                         <h3 className="text-sm font-medium text-gray-900 dark:text-gray-300 tracking-wider mb-4 text-center">{t('Quick Access')}</h3>
                         <div className="grid sm:grid-cols-2 gap-3">
-                            <Button
-                                type="button"
-                                onClick={() => handleQuickLogin('superadmin@example.com', '1234')}
-                                disabled={processing}
-                                className="sm:col-span-2 group h-auto relative py-2 px-4 border text-[13px] font-medium text-white transition-all duration-200 rounded-md shadow-sm hover:shadow-md transform hover:scale-[1.02] bg-primary disabled:opacity-50"
-                            >
-                                {t('Login as Super Admin')}
-                            </Button>
+                            {/* Company only. The super admin shortcut was removed;
+                                that account is signed into through the form. */}
                             <Button
                                 type="button"
                                 onClick={() => handleQuickLogin('company@example.com', '1234')}
                                 disabled={processing}
-                                className="group h-auto relative py-2 px-4 border text-[13px] font-medium text-white transition-all duration-200 rounded-md shadow-sm hover:shadow-md transform hover:scale-[1.02] bg-primary disabled:opacity-50"
+                                className="sm:col-span-2 group h-auto relative py-2 px-4 border text-[13px] font-medium text-white transition-all duration-200 rounded-md shadow-sm hover:shadow-md transform hover:scale-[1.02] bg-primary disabled:opacity-50"
                             >
                                 {t('Login as Company')}
-                            </Button>
-                            <Button
-                                type="button"
-                                onClick={() => handleQuickLogin('john.smith@company.com', '1234')}
-                                disabled={processing}
-                                className="group h-auto relative py-2 px-4 border text-[13px] font-medium text-white transition-all duration-200 rounded-md shadow-sm hover:shadow-md transform hover:scale-[1.02] bg-primary disabled:opacity-50"
-                            >
-                                {t('Login as Employee')}
-                            </Button>
-                            <Button
-                                type="button"
-                                onClick={() => handleQuickLogin('sarah.johnson@client.com', '1234')}
-                                disabled={processing}
-                                className="group h-auto relative py-2 px-4 border text-[13px] font-medium text-white transition-all duration-200 rounded-md shadow-sm hover:shadow-md transform hover:scale-[1.02] bg-primary disabled:opacity-50"
-                            >
-                                {t('Login as Customer')}
-                            </Button>
-                            <Button
-                                type="button"
-                                onClick={() => handleQuickLogin('alex.vendor@supplier.com', '1234')}
-                                disabled={processing}
-                                className="group h-auto relative py-2 px-4 border text-[13px] font-medium text-white transition-all duration-200 rounded-md shadow-sm hover:shadow-md transform hover:scale-[1.02] bg-primary disabled:opacity-50"
-                            >
-                                {t('Login as Vendor')}
                             </Button>
                         </div>
                     </div>

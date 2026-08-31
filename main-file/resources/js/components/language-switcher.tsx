@@ -68,11 +68,13 @@ export function LanguageSwitcher() {
     return (
         <>
             <Select value={currentLanguage} onValueChange={handleLanguageChange}>
-                <SelectTrigger className="w-auto border-none shadow-none bg-transparent hover:bg-muted/50">
+                <SelectTrigger className="h-8 w-auto gap-1 rounded-lg border-none bg-transparent px-2 shadow-none hover:bg-accent">
                     <div className="flex items-center gap-2">
-                        <Globe className="h-4 w-4" />
+                        <Globe className="h-4 w-4 shrink-0" />
                         <span className="text-sm">{currentLang.flag}</span>
-                        <span className="text-sm">{currentLang.name}</span>
+                        {/* The name is the first thing to go when space is tight -
+                            the flag still identifies the language. */}
+                        <span className="hidden text-sm lg:inline">{currentLang.name}</span>
                     </div>
                 </SelectTrigger>
                 <SelectContent align="end">

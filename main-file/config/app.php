@@ -58,6 +58,19 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Quick-fill login buttons
+    |--------------------------------------------------------------------------
+    |
+    | Shows the seeded demo accounts as one-click buttons on the login screen.
+    | These publish working credentials, so this defaults to the local
+    | environment only and must stay off anywhere reachable from outside.
+    |
+    */
+
+    'demo_logins' => (bool) env('APP_DEMO_LOGINS', env('APP_ENV') === 'local'),
+
+    /*
+    |--------------------------------------------------------------------------
     | Application URL
     |--------------------------------------------------------------------------
     |
