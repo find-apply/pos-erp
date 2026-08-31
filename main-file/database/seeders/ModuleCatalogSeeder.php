@@ -25,6 +25,7 @@ class ModuleCatalogSeeder extends Seeder
             ['module' => 'Account', 'name' => 'Accounting', 'package_name' => 'account', 'monthly_price' => 0, 'yearly_price' => 0, 'priority' => 20],
 
             // Distribution - price depends on the tier chosen at registration.
+            ['module' => 'Distribution', 'name' => 'Distribution', 'package_name' => 'distribution', 'monthly_price' => 0, 'yearly_price' => 0, 'priority' => 400],
             ['module' => 'FleetTracking', 'name' => 'Fleet Tracking', 'package_name' => 'fleet-tracking', 'monthly_price' => 1500, 'yearly_price' => 25000, 'priority' => 240],
 
             ['module' => 'Zakat', 'name' => 'Zakat', 'package_name' => 'zakat', 'monthly_price' => 500, 'yearly_price' => 5000, 'priority' => 230],

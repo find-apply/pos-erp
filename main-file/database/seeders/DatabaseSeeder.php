@@ -16,12 +16,18 @@ class DatabaseSeeder extends Seeder
     {
         (new PermissionRoleSeeder())->run();
         (new DefultSetting())->run();
+        // The module catalog has to exist before the plans that reference it.
+        (new ModuleCatalogSeeder())->run();
         (new PlanSeeder())->run();
         (new EmailTemplatesSeeder())->run();
         (new NotificationsTableSeeder())->run();
 
         $userId = User::where('email', 'company@example.com')->first()->id;
         User::CompanySetting($userId);
+
+        // Plan, active modules and package permissions - the wiring that makes
+        // the installed packages actually reachable for the demo company.
+        (new CompanyModuleAccessSeeder())->run($userId);
 
         if(config('app.run_demo_seeder'))
         {
