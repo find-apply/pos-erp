@@ -28,6 +28,7 @@ Route::middleware(['web', 'auth', 'verified', 'PlanModuleCheck:Distribution'])
         Route::get('/rounds', [DistributionController::class, 'rounds'])->name('rounds');
         Route::post('/rounds', [DistributionController::class, 'storeRound'])->name('rounds.store');
         Route::put('/rounds/{round}', [DistributionController::class, 'updateRound'])->name('rounds.update');
+        Route::get('/rounds/{round}/track', [DistributionController::class, 'trackRound'])->name('rounds.track');
         Route::put('/rounds/{round}/transition', [DistributionController::class, 'transitionRound'])->name('rounds.transition');
         Route::delete('/rounds/{round}', [DistributionController::class, 'destroyRound'])->name('rounds.destroy');
 

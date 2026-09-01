@@ -170,6 +170,23 @@ class DistributionController extends Controller
         return back()->with('success', __('Delivery note deleted successfully.'));
     }
 
+    /**
+     * JSON, not Inertia: the round map polls this while it is open so the
+     * vehicle marker moves without reloading the planner behind it.
+     */
+    public function trackRound(DeliveryRound $round)
+    {
+        if ($denied = $this->deny('manage-delivery-rounds')) {
+            return response()->json(['message' => __('Permission denied')], 403);
+        }
+
+        if ($round->created_by !== creatorId()) {
+            return response()->json(['message' => __('Permission denied')], 403);
+        }
+
+        return response()->json($this->distribution->roundTracking($round));
+    }
+
     public function storeRound(Request $request)
     {
         if ($denied = $this->deny('manage-delivery-rounds')) {

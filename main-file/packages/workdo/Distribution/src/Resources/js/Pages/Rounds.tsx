@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { Head, router, usePage } from '@inertiajs/react';
 import { useTranslation } from 'react-i18next';
-import { CheckCircle2, MoreVertical, Pencil, Play, Plus, Route as RouteIcon, Search, Trash2, XCircle } from 'lucide-react';
+import { CheckCircle2, Map, MoreVertical, Pencil, Play, Plus, Route as RouteIcon, Search, Trash2, XCircle } from 'lucide-react';
 import AuthenticatedLayout from '@/layouts/authenticated-layout';
 import { Button } from '@/components/ui/button';
 import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
@@ -11,6 +11,7 @@ import { EmptyState, ScrollX, SectionCard, StatusBadge } from '@/components/ui/p
 import { formatCurrency, formatDate } from '@/utils/helpers';
 import { DeliveryNoteDialog } from '../Components/DeliveryNoteDialog';
 import { AssignableNote, Driver, EditableRound, RoundDialog } from '../Components/RoundDialog';
+import { RoundMapDialog } from '../Components/RoundMapDialog';
 import { ROUND_STATUSES, ROUND_TONES, roundStatusLabel } from '../lib/status';
 
 declare global {
@@ -64,6 +65,7 @@ export default function Rounds() {
 
     const [search, setSearch] = useState('');
     const [dialogFor, setDialogFor] = useState<EditableRound | null | undefined>(undefined);
+    const [tracking, setTracking] = useState<number | null>(null);
     const [deleting, setDeleting] = useState<Round | null>(null);
     // Opened from inside the round dialog, which stays mounted underneath.
     const [creatingNote, setCreatingNote] = useState(false);
@@ -169,6 +171,15 @@ export default function Rounds() {
                                                 </StatusBadge>
                                             </td>
                                             <td className="p-3 text-end">
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    onClick={() => setTracking(round.id)}
+                                                    aria-label={t('Track the round')}
+                                                    title={t('Track the round')}
+                                                >
+                                                    <Map className="h-4 w-4" />
+                                                </Button>
                                                 <DropdownMenu>
                                                     <DropdownMenuTrigger asChild>
                                                         <Button variant="ghost" size="icon">
@@ -261,6 +272,8 @@ export default function Rounds() {
                     onClose={() => setCreatingNote(false)}
                 />
             )}
+
+            {tracking !== null && <RoundMapDialog roundId={tracking} onClose={() => setTracking(null)} />}
 
             {deleting && (
                 <ConfirmationDialog

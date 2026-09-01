@@ -272,5 +272,13 @@
     "warehouses": "مخازن",
     "Collect": "تحصيل",
     "unpaid delivery notes": "سندات تسليم غير مسددة",
-    "Applied to the oldest unpaid delivery note first, and added to your cash.": "يُخصم من أقدم سند غير مسدد أولًا، ويُضاف إلى نقديتك."
+    "Applied to the oldest unpaid delivery note first, and added to your cash.": "يُخصم من أقدم سند غير مسدد أولًا، ويُضاف إلى نقديتك.",
+    "Track the round": "تتبع الجولة",
+    "Live": "مباشر",
+    "Last known position": "آخر موقع معروف",
+    "No pin": "بدون موقع",
+    "stops on the map": "محطة على الخريطة",
+    "Stops without a customer pin are not drawn:": "المحطات بدون موقع للعميل لا تظهر على الخريطة:",
+    "Could not load the map.": "تعذّر تحميل الخريطة.",
+    "Offline": "غير متصل"
 }

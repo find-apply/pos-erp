@@ -7,6 +7,7 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Schema;
 use Workdo\Distribution\Models\DeliveryNote;
 use Workdo\Distribution\Models\DeliveryRound;
 
@@ -381,6 +382,107 @@ class DistributionService
             ->filter(fn ($minutes) => $minutes !== null);
 
         return $durations->isEmpty() ? 0 : (int) round($durations->avg());
+    }
+
+    /**
+     * Everything the round map draws: the stops in delivery order, and where
+     * the driver's vehicle currently is.
+     *
+     * The vehicle is reached through FleetTracking's tables directly rather
+     * than its models - Distribution has to keep working when that package is
+     * not installed, so a missing table means "no vehicle", not a crash.
+     */
+    public function roundTracking(DeliveryRound $round): array
+    {
+        $stops = $round->deliveryNotes()
+            ->orderBy('sequence')
+            ->orderBy('id')
+            ->get();
+
+        $names = DB::table('customers')
+            ->whereIn('id', $stops->pluck('customer_id')->filter()->all())
+            ->pluck('company_name', 'id');
+
+        return [
+            'round' => [
+                'id' => $round->id,
+                'reference' => $round->reference,
+                'status' => $round->status,
+                'driver' => $round->driver ? ['id' => $round->driver->id, 'name' => $round->driver->name] : null,
+            ],
+            'stops' => $stops
+                ->map(fn (DeliveryNote $note, int $index) => [
+                    'id' => $note->id,
+                    'order' => $index + 1,
+                    'reference' => $note->reference,
+                    'status' => $note->status,
+                    'customer' => $names[$note->customer_id] ?? null,
+                    'total_amount' => (float) $note->total_amount,
+                    'collected_amount' => (float) $note->collected_amount,
+                    // Null when the customer has no pin: the map skips it and
+                    // the list says so, rather than dropping a stop silently.
+                    'latitude' => $note->latitude !== null ? (float) $note->latitude : null,
+                    'longitude' => $note->longitude !== null ? (float) $note->longitude : null,
+                ])
+                ->values(),
+            'vehicle' => $this->vehicleForDriver($round->driver_id),
+        ];
+    }
+
+    /** The active vehicle assigned to a driver, with its last known position. */
+    private function vehicleForDriver(?int $driverId): ?array
+    {
+        if (!$driverId || !Schema::hasTable('vehicle_assignments') || !Schema::hasTable('vehicles')) {
+            return null;
+        }
+
+        $vehicle = DB::table('vehicle_assignments')
+            ->join('vehicles', 'vehicles.id', '=', 'vehicle_assignments.vehicle_id')
+            ->where('vehicle_assignments.driver_id', $driverId)
+            ->where('vehicle_assignments.status', 'active')
+            ->orderByDesc('vehicle_assignments.id')
+            ->first([
+                'vehicles.id', 'vehicles.name', 'vehicles.plate_number',
+                'vehicles.last_latitude', 'vehicles.last_longitude',
+                'vehicles.last_speed', 'vehicles.last_ping_at', 'vehicles.last_source',
+            ]);
+
+        if (!$vehicle) {
+            return null;
+        }
+
+        return [
+            'id' => (int) $vehicle->id,
+            'name' => $vehicle->name,
+            'plate_number' => $vehicle->plate_number,
+            'latitude' => $vehicle->last_latitude !== null ? (float) $vehicle->last_latitude : null,
+            'longitude' => $vehicle->last_longitude !== null ? (float) $vehicle->last_longitude : null,
+            'speed' => $vehicle->last_speed !== null ? (float) $vehicle->last_speed : null,
+            'last_ping_at' => $vehicle->last_ping_at,
+            'source' => $vehicle->last_source,
+            'tracking_status' => $this->trackingStatus($vehicle->last_ping_at),
+        ];
+    }
+
+    /**
+     * Kept in step with FleetTrackingService::STALE_AFTER_MINUTES by hand.
+     *
+     * The constant is not imported because this file reaches FleetTracking
+     * through raw tables precisely so Distribution still runs when that package
+     * is absent; a class reference would undo that.
+     */
+    private const STALE_AFTER_MINUTES = 10;
+
+    /** Same three states FleetTracking reports, so the two pages agree. */
+    private function trackingStatus(?string $lastPingAt): string
+    {
+        if (!$lastPingAt) {
+            return 'offline';
+        }
+
+        return Carbon::parse($lastPingAt)->greaterThanOrEqualTo(now()->subMinutes(self::STALE_AFTER_MINUTES))
+            ? 'online'
+            : 'stale';
     }
 
     public function roundPayload(DeliveryRound $round): array

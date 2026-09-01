@@ -272,5 +272,13 @@
     "warehouses": "warehouses",
     "Collect": "Collect",
     "unpaid delivery notes": "unpaid delivery notes",
-    "Applied to the oldest unpaid delivery note first, and added to your cash.": "Applied to the oldest unpaid delivery note first, and added to your cash."
+    "Applied to the oldest unpaid delivery note first, and added to your cash.": "Applied to the oldest unpaid delivery note first, and added to your cash.",
+    "Track the round": "Track the round",
+    "Live": "Live",
+    "Last known position": "Last known position",
+    "No pin": "No pin",
+    "stops on the map": "stops on the map",
+    "Stops without a customer pin are not drawn:": "Stops without a customer pin are not drawn:",
+    "Could not load the map.": "Could not load the map.",
+    "Offline": "Offline"
 }

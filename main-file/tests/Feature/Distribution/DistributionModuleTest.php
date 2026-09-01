@@ -492,6 +492,55 @@ class DistributionModuleTest extends TestCase
         $this->assertNull($note->fresh()->delivered_at);
     }
 
+    public function test_round_tracking_lists_stops_in_delivery_order(): void
+    {
+        $round = DeliveryRound::create([
+            'reference' => 'TRN-TRACK', 'round_date' => today(), 'driver_id' => $this->driver->id,
+            'status' => DeliveryRound::STATUS_IN_PROGRESS,
+            'creator_id' => $this->company->id, 'created_by' => $this->company->id,
+        ]);
+
+        // Inserted out of order on purpose; sequence is what decides.
+        $second = $this->note(['round_id' => $round->id, 'sequence' => 2, 'latitude' => 36.75, 'longitude' => 3.06]);
+        $first = $this->note(['round_id' => $round->id, 'sequence' => 1, 'latitude' => 36.47, 'longitude' => 2.83]);
+        // No customer pin: still listed, just not drawable.
+        $third = $this->note(['round_id' => $round->id, 'sequence' => 3]);
+
+        $tracking = app(DistributionService::class)->roundTracking($round->fresh());
+
+        $this->assertSame([$first->id, $second->id, $third->id], $tracking['stops']->pluck('id')->all());
+        $this->assertSame([1, 2, 3], $tracking['stops']->pluck('order')->all());
+        $this->assertNull($tracking['stops'][2]['latitude']);
+    }
+
+    public function test_round_tracking_reports_no_vehicle_when_the_driver_has_none(): void
+    {
+        $round = DeliveryRound::create([
+            'reference' => 'TRN-NOVAN', 'round_date' => today(), 'driver_id' => $this->driver->id,
+            'status' => DeliveryRound::STATUS_PLANNED,
+            'creator_id' => $this->company->id, 'created_by' => $this->company->id,
+        ]);
+
+        // The common reason the car never shows up on the map.
+        $this->assertNull(app(DistributionService::class)->roundTracking($round)['vehicle']);
+    }
+
+    public function test_another_company_cannot_track_this_round(): void
+    {
+        $round = DeliveryRound::create([
+            'reference' => 'TRN-MINE', 'round_date' => today(), 'driver_id' => $this->driver->id,
+            'status' => DeliveryRound::STATUS_PLANNED,
+            'creator_id' => $this->company->id, 'created_by' => $this->company->id,
+        ]);
+
+        $intruder = $this->otherCompany('rival-tracker@example.test');
+        $this->givePermissions($intruder, ['manage-delivery-rounds']);
+
+        $this->actingAs($intruder)
+            ->getJson(route('distribution.rounds.track', $round->id))
+            ->assertForbidden();
+    }
+
     public function test_collecting_a_debt_fills_the_oldest_note_first(): void
     {
         $driver = $this->makeDriver();
