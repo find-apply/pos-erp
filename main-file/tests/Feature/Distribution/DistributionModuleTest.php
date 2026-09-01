@@ -492,6 +492,120 @@ class DistributionModuleTest extends TestCase
         $this->assertNull($note->fresh()->delivered_at);
     }
 
+    public function test_collecting_a_debt_fills_the_oldest_note_first(): void
+    {
+        $driver = $this->makeDriver();
+
+        $older = $this->note([
+            'driver_id' => $driver->user_id, 'customer_id' => 77,
+            'status' => DeliveryNote::STATUS_PARTIAL,
+            'scheduled_date' => today()->subDays(3),
+            'total_amount' => 5000, 'collected_amount' => 1000,
+        ]);
+        $newer = $this->note([
+            'driver_id' => $driver->user_id, 'customer_id' => 77,
+            'status' => DeliveryNote::STATUS_DELIVERED,
+            'scheduled_date' => today(),
+            'total_amount' => 3000, 'collected_amount' => 0,
+        ]);
+
+        // 7 000 outstanding; 5 000 clears the older note and spills 1 000 over.
+        $this->actingAs($driver->user)
+            ->post(route('distribution.driver.collect'), ['customer_id' => 77, 'amount' => 5000])
+            ->assertSessionHasNoErrors();
+
+        $this->assertSame('5000.00', $older->fresh()->collected_amount);
+        $this->assertSame('1000.00', $newer->fresh()->collected_amount);
+        $this->assertSame('5000.00', $driver->fresh()->cash_balance);
+
+        // One movement per note, so the trail says which delivery was settled.
+        $this->assertDatabaseHas('driver_cash_movements', [
+            'driver_id' => $driver->id, 'delivery_note_id' => $older->id, 'amount' => 4000,
+        ]);
+        $this->assertDatabaseHas('driver_cash_movements', [
+            'driver_id' => $driver->id, 'delivery_note_id' => $newer->id, 'amount' => 1000,
+        ]);
+    }
+
+    public function test_collecting_leaves_the_delivery_status_alone(): void
+    {
+        $driver = $this->makeDriver();
+        $note = $this->note([
+            'driver_id' => $driver->user_id, 'customer_id' => 78,
+            'status' => DeliveryNote::STATUS_PARTIAL,
+            'total_amount' => 2000, 'collected_amount' => 500,
+        ]);
+
+        $this->actingAs($driver->user)
+            ->post(route('distribution.driver.collect'), ['customer_id' => 78, 'amount' => 1500]);
+
+        // Status describes how the delivery went, not whether it was paid for.
+        $this->assertSame(DeliveryNote::STATUS_PARTIAL, $note->fresh()->status);
+        $this->assertSame('2000.00', $note->fresh()->collected_amount);
+    }
+
+    public function test_a_driver_cannot_collect_more_than_is_owed(): void
+    {
+        $driver = $this->makeDriver();
+        $note = $this->note([
+            'driver_id' => $driver->user_id, 'customer_id' => 79,
+            'status' => DeliveryNote::STATUS_DELIVERED,
+            'total_amount' => 1000, 'collected_amount' => 400,
+        ]);
+
+        $this->actingAs($driver->user)
+            ->post(route('distribution.driver.collect'), ['customer_id' => 79, 'amount' => 601])
+            ->assertSessionHasErrors('amount');
+
+        $this->assertSame('400.00', $note->fresh()->collected_amount);
+        $this->assertSame('0.00', $driver->fresh()->cash_balance);
+    }
+
+    public function test_a_driver_cannot_collect_against_another_drivers_notes(): void
+    {
+        $mine = $this->makeDriver();
+        $theirs = $this->makeDriver(['name' => 'Samia', 'phone' => '0555998877']);
+
+        $note = $this->note([
+            'driver_id' => $theirs->user_id, 'customer_id' => 80,
+            'status' => DeliveryNote::STATUS_DELIVERED,
+            'total_amount' => 4000, 'collected_amount' => 0,
+        ]);
+
+        $this->actingAs($mine->user)
+            ->post(route('distribution.driver.collect'), ['customer_id' => 80, 'amount' => 4000])
+            ->assertSessionHasErrors('amount');
+
+        $this->assertSame('0.00', $note->fresh()->collected_amount);
+        $this->assertSame('0.00', $mine->fresh()->cash_balance);
+    }
+
+    public function test_a_settled_customer_drops_off_the_debt_list(): void
+    {
+        $driver = $this->makeDriver();
+        $this->note([
+            'driver_id' => $driver->user_id, 'customer_id' => 81,
+            'status' => DeliveryNote::STATUS_DELIVERED,
+            'total_amount' => 2500, 'collected_amount' => 2500,
+        ]);
+        $open = $this->note([
+            'driver_id' => $driver->user_id, 'customer_id' => 81,
+            'status' => DeliveryNote::STATUS_DELIVERED,
+            'total_amount' => 1500, 'collected_amount' => 0,
+        ]);
+
+        // The count is of unpaid notes, not of every note the customer has had.
+        $before = app(DriverPortalService::class)->receivables($driver);
+        $this->assertSame(1, $before->first()['notes']);
+        $this->assertSame(1500.0, $before->first()['debt']);
+
+        $this->actingAs($driver->user)
+            ->post(route('distribution.driver.collect'), ['customer_id' => 81, 'amount' => 1500]);
+
+        $this->assertSame('1500.00', $open->fresh()->collected_amount);
+        $this->assertCount(0, app(DriverPortalService::class)->receivables($driver->fresh()));
+    }
+
     public function test_a_driver_cannot_complete_another_drivers_delivery(): void
     {
         $mine = $this->makeDriver();

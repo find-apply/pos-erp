@@ -1,11 +1,19 @@
-import { useMemo, useState } from 'react';
-import { Head, usePage } from '@inertiajs/react';
+import { FormEvent, useMemo, useState } from 'react';
+import { Head, useForm, usePage } from '@inertiajs/react';
 import { useTranslation } from 'react-i18next';
-import { CreditCard, Search } from 'lucide-react';
+import { CreditCard, Search, Wallet } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
+import { InputError } from '@/components/ui/input-error';
+import { Label } from '@/components/ui/label';
 import { EmptyState } from '@/components/ui/page-kit';
 import { formatCurrency } from '@/utils/helpers';
 import { DriverShell } from '../../Components/DriverShell';
+
+declare global {
+    function route(name: string, params?: any): string;
+}
 
 type Debtor = { customer_id: number; name: string; debt: number; notes: number };
 
@@ -15,10 +23,69 @@ type Props = {
     summary: { customers: number; total: number };
 };
 
+/** A customer settles what they still owe on deliveries already made. */
+function CollectDialog({ debtor, onClose }: { debtor: Debtor; onClose: () => void }) {
+    const { t } = useTranslation();
+    const form = useForm({ customer_id: debtor.customer_id, amount: debtor.debt });
+
+    const submit = (event: FormEvent) => {
+        event.preventDefault();
+        form.post(route('distribution.driver.collect'), { preserveScroll: true, onSuccess: onClose });
+    };
+
+    return (
+        <Dialog open onOpenChange={(open) => !open && onClose()}>
+            <DialogContent className="max-w-sm">
+                <form onSubmit={submit}>
+                    <DialogHeader>
+                        <DialogTitle>{t('Collect a debt')}</DialogTitle>
+                        <DialogDescription>
+                            {debtor.name} — {formatCurrency(debtor.debt)}
+                        </DialogDescription>
+                    </DialogHeader>
+
+                    <div className="grid gap-2 py-4">
+                        <Label htmlFor="amount">{t('Amount collected')}</Label>
+                        <Input
+                            id="amount"
+                            type="number"
+                            inputMode="decimal"
+                            min={0}
+                            max={debtor.debt}
+                            step="0.01"
+                            autoFocus
+                            value={form.data.amount}
+                            onChange={(event) => form.setData('amount', Number(event.target.value))}
+                        />
+                        <InputError message={form.errors.amount} />
+                        {/* Says where the money goes, so a part payment is not a surprise. */}
+                        <p className="text-xs text-muted-foreground">
+                            {t('Applied to the oldest unpaid delivery note first, and added to your cash.')}
+                        </p>
+                    </div>
+
+                    <DialogFooter>
+                        <Button type="button" variant="outline" onClick={onClose}>
+                            {t('Cancel')}
+                        </Button>
+                        <Button
+                            type="submit"
+                            disabled={form.processing || form.data.amount <= 0 || form.data.amount > debtor.debt}
+                        >
+                            {t('Collect')}
+                        </Button>
+                    </DialogFooter>
+                </form>
+            </DialogContent>
+        </Dialog>
+    );
+}
+
 export default function DriverDebts() {
     const { t } = useTranslation();
     const { driver, debtors, summary } = usePage<Props>().props;
     const [search, setSearch] = useState('');
+    const [collecting, setCollecting] = useState<Debtor | null>(null);
 
     const filtered = useMemo(() => {
         const term = search.trim().toLowerCase();
@@ -73,18 +140,26 @@ export default function DriverDebts() {
                                     <div className="min-w-0">
                                         <p className="truncate font-medium text-gray-900 dark:text-white">{debtor.name}</p>
                                         <p className="text-xs text-muted-foreground">
-                                            {debtor.notes} {t('delivery notes')}
+                                            {debtor.notes} {t('unpaid delivery notes')}
                                         </p>
                                     </div>
-                                    <p className="shrink-0 font-semibold tabular-nums text-red-600 dark:text-red-400">
-                                        {formatCurrency(debtor.debt)}
-                                    </p>
+                                    <div className="flex shrink-0 items-center gap-3">
+                                        <p className="font-semibold tabular-nums text-red-600 dark:text-red-400">
+                                            {formatCurrency(debtor.debt)}
+                                        </p>
+                                        <Button size="sm" onClick={() => setCollecting(debtor)}>
+                                            <Wallet className="h-4 w-4 me-1.5" />
+                                            {t('Collect')}
+                                        </Button>
+                                    </div>
                                 </li>
                             ))}
                         </ul>
                     )}
                 </div>
             </div>
+
+            {collecting && <CollectDialog debtor={collecting} onClose={() => setCollecting(null)} />}
         </DriverShell>
     );
 }

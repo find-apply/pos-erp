@@ -87,24 +87,48 @@ class DriverPortalService
      */
     public function receivables(Driver $driver): Collection
     {
-        return DeliveryNote::where('driver_id', $driver->user_id)
-            ->whereIn('status', [DeliveryNote::STATUS_DELIVERED, DeliveryNote::STATUS_PARTIAL])
+        // Only the notes still owed on. Counting every delivered note in the
+        // group would print "5 delivery notes" beside one unpaid balance.
+        $rows = $this->outstandingNotes($driver)
             ->selectRaw('customer_id, SUM(total_amount - collected_amount) as debt, COUNT(*) as notes')
             ->groupBy('customer_id')
-            ->havingRaw('debt > 0')
-            ->get()
-            ->map(function ($row) {
-                $customer = DB::table('customers')->where('id', $row->customer_id)->first(['company_name']);
+            ->get();
 
-                return [
-                    'customer_id' => (int) $row->customer_id,
-                    'name' => $customer->company_name ?? '-',
-                    'debt' => round((float) $row->debt, 2),
-                    'notes' => (int) $row->notes,
-                ];
-            })
+        // One lookup for every debtor rather than one per row.
+        $names = DB::table('customers')
+            ->whereIn('id', $rows->pluck('customer_id')->filter()->all())
+            ->pluck('company_name', 'id');
+
+        return $rows
+            ->map(fn ($row) => [
+                'customer_id' => (int) $row->customer_id,
+                'name' => $names[$row->customer_id] ?? '-',
+                'debt' => round((float) $row->debt, 2),
+                'notes' => (int) $row->notes,
+            ])
             ->sortByDesc('debt')
             ->values();
+    }
+
+    /** What one customer still owes this driver, in currency. */
+    public function customerOutstanding(Driver $driver, int $customerId): float
+    {
+        return round((float) $this->outstandingNotes($driver)
+            ->where('customer_id', $customerId)
+            ->sum(DB::raw('total_amount - collected_amount')), 2);
+    }
+
+    /**
+     * Completed notes this driver has not been paid in full for.
+     *
+     * A failed delivery handed nothing over, so it is not a debt; a note whose
+     * collected amount already matches its total is settled.
+     */
+    private function outstandingNotes(Driver $driver)
+    {
+        return DeliveryNote::where('driver_id', $driver->user_id)
+            ->whereIn('status', [DeliveryNote::STATUS_DELIVERED, DeliveryNote::STATUS_PARTIAL])
+            ->whereColumn('collected_amount', '<', 'total_amount');
     }
 
     /** The round the driver is on today, if any. */

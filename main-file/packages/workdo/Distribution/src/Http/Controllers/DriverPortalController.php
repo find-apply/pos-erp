@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Workdo\Distribution\Models\DeliveryNote;
 use Workdo\Distribution\Models\Driver;
@@ -222,6 +223,49 @@ class DriverPortalController extends Controller
         }
 
         return back();
+    }
+
+    /**
+     * A customer pays off what they still owe on past deliveries.
+     *
+     * The amount is checked against what this driver is actually owed by that
+     * customer, so one driver cannot post a collection against another's notes
+     * and a stale page cannot over-collect.
+     */
+    public function collectDebt(Request $request)
+    {
+        $driver = $this->currentDriver();
+
+        if (!$driver) {
+            return redirect()->route('distribution.driver.access');
+        }
+
+        $validated = $request->validate([
+            'customer_id' => ['required', 'integer'],
+            'amount' => ['required', 'numeric', 'min:0.01'],
+        ]);
+
+        $outstanding = $this->portal->customerOutstanding($driver, (int) $validated['customer_id']);
+
+        if ($outstanding <= 0) {
+            throw ValidationException::withMessages([
+                'amount' => __('This customer owes you nothing.'),
+            ]);
+        }
+
+        if ((float) $validated['amount'] > $outstanding) {
+            throw ValidationException::withMessages([
+                'amount' => __('That is more than this customer owes.'),
+            ]);
+        }
+
+        $collected = $this->drivers->collectFromCustomer(
+            $driver,
+            (int) $validated['customer_id'],
+            (float) $validated['amount']
+        );
+
+        return back()->with('success', __(':amount collected.', ['amount' => $collected]));
     }
 
     /** The driver hands their collected cash in to the office. */

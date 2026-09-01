@@ -272,6 +272,62 @@ class DriverService
      * The same movement as an office settlement - only the initiator differs,
      * which the ledger already records through `creator_id`.
      */
+    /**
+     * Record money a customer pays after the delivery already happened.
+     *
+     * Allocated oldest note first and written as one cash movement per note,
+     * so the driver's balance and the audit trail stay tied to the deliveries
+     * the money actually settles rather than to a floating lump sum.
+     *
+     * The note's status is deliberately left alone: it describes how the
+     * delivery went, not whether it has been paid for. A partial delivery that
+     * is later paid in full is still a partial delivery.
+     *
+     * @return float the amount actually allocated, which is less than $amount
+     *               only if the debt shrank between the page load and the post
+     */
+    public function collectFromCustomer(Driver $driver, int $customerId, float $amount): float
+    {
+        return DB::transaction(function () use ($driver, $customerId, $amount) {
+            $notes = DeliveryNote::where('driver_id', $driver->user_id)
+                ->where('customer_id', $customerId)
+                ->whereIn('status', [DeliveryNote::STATUS_DELIVERED, DeliveryNote::STATUS_PARTIAL])
+                ->whereColumn('collected_amount', '<', 'total_amount')
+                ->orderBy('scheduled_date')
+                ->orderBy('id')
+                ->lockForUpdate()
+                ->get();
+
+            $remaining = round($amount, 2);
+            $allocated = 0.0;
+
+            foreach ($notes as $note) {
+                if ($remaining <= 0) {
+                    break;
+                }
+
+                $outstanding = round((float) $note->total_amount - (float) $note->collected_amount, 2);
+
+                if ($outstanding <= 0) {
+                    continue;
+                }
+
+                $part = min($outstanding, $remaining);
+
+                $note->update([
+                    'collected_amount' => round((float) $note->collected_amount + $part, 2),
+                ]);
+
+                $this->adjustCash($driver, $part, DriverCashMovement::TYPE_COLLECTION, $note->id);
+
+                $remaining = round($remaining - $part, 2);
+                $allocated = round($allocated + $part, 2);
+            }
+
+            return $allocated;
+        });
+    }
+
     public function depositCash(Driver $driver, float $amount): Driver
     {
         return $this->settleCash($driver, $amount);

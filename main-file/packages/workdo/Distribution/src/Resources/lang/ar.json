@@ -269,5 +269,8 @@
     "stops": "محطات",
     "stops to go": "محطات متبقية",
     "today": "اليوم",
-    "warehouses": "مخازن"
+    "warehouses": "مخازن",
+    "Collect": "تحصيل",
+    "unpaid delivery notes": "سندات تسليم غير مسددة",
+    "Applied to the oldest unpaid delivery note first, and added to your cash.": "يُخصم من أقدم سند غير مسدد أولًا، ويُضاف إلى نقديتك."
 }

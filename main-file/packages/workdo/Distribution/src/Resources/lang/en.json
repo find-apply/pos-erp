@@ -269,5 +269,8 @@
     "stops": "stops",
     "stops to go": "stops to go",
     "today": "today",
-    "warehouses": "warehouses"
+    "warehouses": "warehouses",
+    "Collect": "Collect",
+    "unpaid delivery notes": "unpaid delivery notes",
+    "Applied to the oldest unpaid delivery note first, and added to your cash.": "Applied to the oldest unpaid delivery note first, and added to your cash."
 }

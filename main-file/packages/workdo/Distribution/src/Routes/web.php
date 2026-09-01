@@ -67,6 +67,7 @@ Route::middleware(['web'])
             Route::get('/printer', [DriverPortalController::class, 'printer'])->name('printer');
             Route::put('/notes/{note}/transit', [DriverPortalController::class, 'startTransit'])->name('notes.transit');
             Route::put('/notes/{note}/complete', [DriverPortalController::class, 'completeNote'])->name('notes.complete');
+            Route::post('/collect', [DriverPortalController::class, 'collectDebt'])->name('collect');
             Route::post('/deposit', [DriverPortalController::class, 'depositCash'])->name('deposit');
             Route::post('/logout', [DriverAccessController::class, 'logout'])->name('logout');
         });
