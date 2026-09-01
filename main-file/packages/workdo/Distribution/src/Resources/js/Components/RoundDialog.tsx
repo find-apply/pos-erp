@@ -160,13 +160,17 @@ export function RoundDialog({
             note_ids: selected,
         });
 
+        // transform() stores the callback and returns nothing, so it cannot be
+        // chained - the request has to be its own statement.
+        form.transform(transform);
+
         if (isEdit) {
-            form.transform(transform).put(route('distribution.rounds.update', round!.id), {
+            form.put(route('distribution.rounds.update', round!.id), {
                 preserveScroll: true,
                 onSuccess: onClose,
             });
         } else {
-            form.transform(transform).post(route('distribution.rounds.store'), {
+            form.post(route('distribution.rounds.store'), {
                 preserveScroll: true,
                 onSuccess: onClose,
             });

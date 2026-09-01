@@ -55,11 +55,15 @@ export function LoadVanDialog({
     const submit = (event: FormEvent) => {
         event.preventDefault();
 
+        // transform() stores the callback and returns nothing, so it cannot be
+        // chained - the request has to be its own statement.
         form.transform((data) => ({
             ...data,
             // Blank rows are a UI convenience, not something to post.
             items: lines.filter((line) => line.product_id && line.quantity > 0),
-        })).post(
+        }));
+
+        form.post(
             route(mode === 'load' ? 'distribution.drivers.load' : 'distribution.drivers.unload', driver.id),
             { preserveScroll: true, onSuccess: onClose }
         );

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { Fragment, useState } from 'react';
 import { Head, useForm, Link } from '@inertiajs/react';
 import { useTranslation } from 'react-i18next';
 import AuthenticatedLayout from '@/layouts/authenticated-layout';
@@ -144,7 +144,7 @@ export default function Create({ categories, staff, clients, vendors, allFields,
             {/* All Fields ordered by 'order' field */}
             {allFields && allFields.length > 0 && (
               <div className="grid grid-cols-12 gap-4">
-                {allFields.sort((a, b) => a.order - b.order).map((field) => {
+                {[...allFields].sort((a, b) => a.order - b.order).map((field) => {
                   const colSpan = field.width === '12' ? 'col-span-12' : 
                                 field.width === '6' ? 'col-span-6' : 
                                 field.width === '4' ? 'col-span-4' : 
@@ -242,8 +242,8 @@ export default function Create({ categories, staff, clients, vendors, allFields,
                   
                   if (field.custom_id == 4) { // Subject field
                     return (
-                      <>
-                        <div key={field.id} className="col-span-6">
+                      <Fragment key={field.id}>
+                        <div className="col-span-6">
                           <Label htmlFor="subject" required={field.is_required}>{t(field.name)}</Label>
                           <Input
                             id="subject"
@@ -270,7 +270,7 @@ export default function Create({ categories, staff, clients, vendors, allFields,
                           </Select>
                           {errors.status && <p className="text-red-500 text-sm mt-1">{errors.status}</p>}
                         </div>
-                      </>
+                      </Fragment>
                     );
                   }
                   

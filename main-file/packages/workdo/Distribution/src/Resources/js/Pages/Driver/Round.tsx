@@ -59,8 +59,11 @@ function CompleteDialog({ note, allowCredit, onClose }: { note: Note; allowCredi
                 ? signatureRef.current.toDataURL()
                 : '';
 
-        form.transform((data) => ({ ...data, signature_data: signature }))
-            .put(route('distribution.driver.notes.complete', note.id), {
+        // transform() stores the callback and returns nothing, so it cannot be
+        // chained - the request has to be its own statement.
+        form.transform((data) => ({ ...data, signature_data: signature }));
+
+        form.put(route('distribution.driver.notes.complete', note.id), {
             preserveScroll: true,
             onSuccess: () => onClose(),
         });

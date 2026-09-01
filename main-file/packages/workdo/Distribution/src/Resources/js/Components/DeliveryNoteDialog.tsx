@@ -124,14 +124,18 @@ export function DeliveryNoteDialog({
             round_id: data.round_id || null,
         });
 
+        // transform() stores the callback and returns nothing, so it cannot be
+        // chained - the request has to be its own statement.
+        form.transform(transform);
+
         if (isEdit) {
-            form.transform(transform).put(route('distribution.delivery-notes.update', note!.id), {
+            form.put(route('distribution.delivery-notes.update', note!.id), {
                 preserveScroll: true,
                 preserveState: preservePageState,
                 onSuccess: onClose,
             });
         } else {
-            form.transform(transform).post(route('distribution.delivery-notes.store'), {
+            form.post(route('distribution.delivery-notes.store'), {
                 preserveScroll: true,
                 preserveState: preservePageState,
                 onSuccess: onClose,
