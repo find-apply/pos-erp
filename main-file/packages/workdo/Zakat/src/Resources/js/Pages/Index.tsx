@@ -87,6 +87,25 @@ const MILLION = 1_000_000;
 /** The classic nisab: the value of 85 grams of gold. */
 const NISAB_GOLD_GRAMS = 85;
 
+/**
+ * Accepts either decimal separator.
+ *
+ * The fields below are text rather than number inputs: a number input is
+ * rendered by the browser's own locale, so 3.033984 was displayed as
+ * "3,033984" and read as three million rather than three. Text keeps the
+ * string exactly as written here, and this undoes a comma someone types.
+ */
+const toNumber = (text: string | number | null | undefined) =>
+    Number(String(text ?? '').trim().replace(',', '.').replace(/\s/g, '')) || 0;
+
+/** Digits and a single separator; anything else never reaches the field. */
+const cleanDecimal = (text: string) => {
+    const kept = text.replace(/[^\d.,]/g, '').replace(',', '.');
+    const [whole, ...rest] = kept.split('.');
+
+    return rest.length ? `${whole}.${rest.join('')}` : whole;
+};
+
 /** Trailing zeros stripped, so 2 980 000 reads as "2.98" and not "2.980000". */
 const toMillions = (value: unknown) => {
     const millions = Number(value ?? 0) / MILLION;
@@ -95,11 +114,11 @@ const toMillions = (value: unknown) => {
 };
 
 /** Rounded to the currency's own precision, not the float's. */
-const fromMillions = (text: string) => Math.round(Number(text || 0) * MILLION * 100) / 100;
+const fromMillions = (text: string) => Math.round(toNumber(text) * MILLION * 100) / 100;
 
 /** The service drops any adjustment missing a title, an amount, or a reason. */
 const isAdjustmentComplete = (adjustment: Adjustment) =>
-    adjustment.title.trim() !== '' && Number(adjustment.amount) > 0 && adjustment.reason.trim() !== '';
+    adjustment.title.trim() !== '' && toNumber(adjustment.amount) > 0 && adjustment.reason.trim() !== '';
 
 export default function Index() {
     const { t } = useTranslation();
@@ -156,7 +175,7 @@ export default function Index() {
 
         (Object.keys(overrides) as Section[]).forEach((section) => {
             const typed = overrides[section];
-            if (typed !== undefined && typed.trim() !== '' && Number.isFinite(Number(typed))) {
+            if (typed !== undefined && typed.trim() !== '' && Number.isFinite(toNumber(typed))) {
                 result[section] = fromMillions(typed);
             }
         });
@@ -212,7 +231,7 @@ export default function Index() {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [payloadKey]);
 
-    const nisabConfigured = Number(form.nisab_amount || 0) > 0;
+    const nisabConfigured = toNumber(form.nisab_amount) > 0;
     const zakatableAmount = Number(summary.zakatable_amount || 0);
     const zakatDue = Number(summary.zakat_due || 0);
     const isEligible = Boolean(summary.is_nisab_met && summary.is_haul_met);
@@ -255,7 +274,7 @@ export default function Index() {
         setForm((current) => ({
             ...current,
             gold_price_per_gram: price,
-            nisab_amount: String(Math.round(Number(price || 0) * NISAB_GOLD_GRAMS * 100) / 100),
+            nisab_amount: String(Math.round(toNumber(price) * NISAB_GOLD_GRAMS * 100) / 100),
         }));
 
     const save = () => {
@@ -405,11 +424,10 @@ export default function Index() {
                                         <div className="w-40 shrink-0">
                                             <div className="relative">
                                                 <Input
-                                                    type="number"
-                                                    step="0.001"
-                                                    min="0"
+                                                    type="text"
+                                                    inputMode="decimal"
                                                     value={form.gold_grams}
-                                                    onChange={(event) => set('gold_grams', event.target.value)}
+                                                    onChange={(event) => set('gold_grams', cleanDecimal(event.target.value))}
                                                     placeholder="0"
                                                     className="pe-12 text-end tabular-nums"
                                                     aria-label={t('Gold you hold')}
@@ -446,11 +464,14 @@ export default function Index() {
                                                 <div className="w-40 shrink-0">
                                                     <div className="flex items-center gap-1">
                                                         <Input
-                                                            type="number"
-                                                            step="0.0001"
+                                                            type="text"
+                                                            inputMode="decimal"
                                                             value={shown}
                                                             onChange={(event) =>
-                                                                setOverrides((current) => ({ ...current, [row.section]: event.target.value }))
+                                                                setOverrides((current) => ({
+                                                                    ...current,
+                                                                    [row.section]: cleanDecimal(event.target.value),
+                                                                }))
                                                             }
                                                             className="text-end tabular-nums"
                                                             aria-label={row.label}
@@ -516,19 +537,19 @@ export default function Index() {
                                                 <div>
                                                     <Label>{t('Nisab Amount')}</Label>
                                                     <Input
-                                                        type="number"
-                                                        step="0.01"
+                                                        type="text"
+                                                        inputMode="decimal"
                                                         value={form.nisab_amount}
-                                                        onChange={(event) => set('nisab_amount', event.target.value)}
+                                                        onChange={(event) => set('nisab_amount', cleanDecimal(event.target.value))}
                                                     />
                                                 </div>
                                                 <div>
                                                     <Label>{t('Gold price per gram')}</Label>
                                                     <Input
-                                                        type="number"
-                                                        step="0.01"
+                                                        type="text"
+                                                        inputMode="decimal"
                                                         value={form.gold_price_per_gram}
-                                                        onChange={(event) => applyGoldPrice(event.target.value)}
+                                                        onChange={(event) => applyGoldPrice(cleanDecimal(event.target.value))}
                                                         placeholder={t('Fills the nisab for you')}
                                                     />
                                                     <p className="mt-1 text-xs text-muted-foreground">
@@ -538,10 +559,10 @@ export default function Index() {
                                                 <div>
                                                     <Label>{t('Zakat Rate')}</Label>
                                                     <Input
-                                                        type="number"
-                                                        step="0.01"
+                                                        type="text"
+                                                        inputMode="decimal"
                                                         value={form.rate_percent}
-                                                        onChange={(event) => set('rate_percent', event.target.value)}
+                                                        onChange={(event) => set('rate_percent', cleanDecimal(event.target.value))}
                                                     />
                                                 </div>
                                             </div>
@@ -655,10 +676,10 @@ export default function Index() {
                                                     />
                                                     <Input
                                                         className="md:col-span-3"
-                                                        type="number"
-                                                        step="0.01"
+                                                        type="text"
+                                                        inputMode="decimal"
                                                         value={adjustment.amount}
-                                                        onChange={(event) => updateAdjustment(index, 'amount', event.target.value)}
+                                                        onChange={(event) => updateAdjustment(index, 'amount', cleanDecimal(event.target.value))}
                                                         placeholder={t('Amount')}
                                                     />
                                                     <Button

@@ -596,5 +596,6 @@
     "credit": "credit",
     "debit": "debit",
     "loan": "loan",
-    "savings": "savings"
+    "savings": "savings",
+    "Accounting": "Accounting"
 }

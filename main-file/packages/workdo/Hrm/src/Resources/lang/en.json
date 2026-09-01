@@ -69,7 +69,7 @@
     "Employee Details": "Employee Details",
     "Employee ID": "Employee ID",
     "Employee Name": "Employee Name",
-    "Enable\/Disable": "Enable\/Disable",
+    "Enable/Disable": "Enable/Disable",
     "Enabled": "Enabled",
     "End Date": "End Date",
     "End Time": "End Time",
@@ -531,7 +531,7 @@
     "Attendance cannot be created on holidays.": "Attendance cannot be created on holidays.",
     "Attendances": "Attendances",
     "Auto Generated": "Auto Generated",
-    "Bank A\/C No": "Bank A\/C No",
+    "Bank A/C No": "Bank A/C No",
     "Basic salary updated successfully.": "Basic salary updated successfully.",
     "Break Hour": "Break Hour",
     "Career Progression": "Career Progression",
@@ -1006,5 +1006,6 @@
     "You must clock in first.": "You must clock in first.",
     "Your shift timing": "Your shift timing",
     "attendance rate": "attendance rate",
-    "from yesterday": "from yesterday"
+    "from yesterday": "from yesterday",
+    "HRM": "HRM"
 }
