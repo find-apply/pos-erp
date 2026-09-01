@@ -1,4 +1,4 @@
-import { FormEvent, useMemo, useRef, useState } from 'react';
+import { FormEvent, useEffect, useMemo, useRef, useState } from 'react';
 import { Head, router, useForm, usePage } from '@inertiajs/react';
 import { useTranslation } from 'react-i18next';
 import { Eraser, MapPin, Navigation, PackageCheck, PenTool, Printer } from 'lucide-react';
@@ -37,6 +37,12 @@ function CompleteDialog({ note, allowCredit, onClose }: { note: Note; allowCredi
     const { t } = useTranslation();
 
     const signatureRef = useRef<SignatureCanvas>(null);
+    const padRef = useRef<HTMLDivElement>(null);
+    // The canvas needs real width and height attributes, not just CSS. Sized by
+    // CSS alone it is measured while the dialog is still animating open, its
+    // drawing buffer ends up zero wide, and toDataURL() then returns a 1x1
+    // transparent PNG however carefully the recipient signs.
+    const [padWidth, setPadWidth] = useState(0);
 
     const form = useForm({
         status: 'delivered',
@@ -48,6 +54,26 @@ function CompleteDialog({ note, allowCredit, onClose }: { note: Note; allowCredi
     });
 
     const isFailed = form.data.status === 'failed';
+
+    useEffect(() => {
+        const measure = () => {
+            const width = padRef.current?.clientWidth ?? 0;
+
+            // Resizing wipes the canvas, so an in-progress signature wins over
+            // a tidier fit.
+            if (width > 0 && (signatureRef.current?.isEmpty() ?? true)) {
+                setPadWidth(width);
+            }
+        };
+
+        const settled = setTimeout(measure, 80);
+        window.addEventListener('resize', measure);
+
+        return () => {
+            clearTimeout(settled);
+            window.removeEventListener('resize', measure);
+        };
+    }, []);
 
     const submit = (event: FormEvent) => {
         event.preventDefault();
@@ -154,12 +180,14 @@ function CompleteDialog({ note, allowCredit, onClose }: { note: Note; allowCredi
                                             {t('Clear')}
                                         </Button>
                                     </div>
-                                    <div className="overflow-hidden rounded-lg border bg-white">
-                                        <SignatureCanvas
-                                            ref={signatureRef}
-                                            penColor="#111827"
-                                            canvasProps={{ className: 'h-32 w-full' }}
-                                        />
+                                    <div ref={padRef} className="h-32 overflow-hidden rounded-lg border bg-white">
+                                        {padWidth > 0 && (
+                                            <SignatureCanvas
+                                                ref={signatureRef}
+                                                penColor="#111827"
+                                                canvasProps={{ width: padWidth, height: 128, className: 'block' }}
+                                            />
+                                        )}
                                     </div>
                                     <p className="text-xs text-muted-foreground">
                                         {t('Have the recipient sign - optional')}
