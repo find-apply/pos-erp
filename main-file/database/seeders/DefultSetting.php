@@ -62,7 +62,7 @@ class DefultSetting extends Seeder
             'metaImage' => 'meta_image.png',
 
             // Cookie Settings
-            'enableCookiePopup' => '1',
+            'enableCookiePopup' => '0',
             'enableLogging' => '0',
             'strictlyNecessaryCookies' => '1',
             'cookieTitle' => 'Cookie Consent',
