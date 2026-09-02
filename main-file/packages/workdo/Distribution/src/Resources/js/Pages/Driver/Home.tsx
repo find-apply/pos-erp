@@ -1,7 +1,7 @@
 import { FormEvent, useState } from 'react';
 import { Head, Link, useForm, usePage } from '@inertiajs/react';
 import { useTranslation } from 'react-i18next';
-import { ArrowUpRight, Banknote, CreditCard, Map, Package, Route as RouteIcon, Users, Wallet } from 'lucide-react';
+import { ArrowUpRight, Banknote, CreditCard, Package, Route as RouteIcon, Users, Wallet } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
@@ -221,15 +221,6 @@ export default function DriverHomePage() {
                         href={route('distribution.driver.more')}
                     />
                 </div>
-
-                <Tile
-                    icon={Map}
-                    tone="text-teal-500"
-                    label={t('GPS Map')}
-                    value={t('Map')}
-                    hint={t('Warehouses · customers · drivers')}
-                    href={route('distribution.driver.map')}
-                />
 
                 <div className="space-y-2 pt-2">
                     <h2 className="text-sm font-medium text-muted-foreground">{t('Quick actions')}</h2>
