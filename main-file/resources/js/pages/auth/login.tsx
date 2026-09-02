@@ -15,15 +15,11 @@ import { usePageButtons } from '@/hooks/usePageButtons';
 export default function Login({
     status,
     canResetPassword,
-    enableRegistration,
     isDemo = false,
-    demoLogins = false,
 }: {
     status?: string;
     canResetPassword: boolean;
-    enableRegistration?: boolean;
     isDemo?: boolean;
-    demoLogins?: boolean;
 }) {
     const { t } = useTranslation();
     const { data, setData, post, processing, errors, reset } = useForm({
@@ -200,17 +196,6 @@ export default function Login({
                     )}
                 </div>
 
-                {enableRegistration && (
-                    <div className="text-center mt-5">
-                        <p className="text-sm text-gray-500 dark:text-gray-400">
-                            {t("Don't have an account?")}{' '}
-                            <Link href={route('register')} tabIndex={6} className="text-primary font-medium hover:underline">
-                                {t('Create one')}
-                            </Link>
-                        </p>
-                    </div>
-                )}
-
                 <div className="mt-5 border-t border-gray-100 pt-4 dark:border-gray-700">
                     <Link
                         href={route('driver.login')}
@@ -221,33 +206,27 @@ export default function Login({
                     </Link>
                 </div>
 
-                {(isDemo || demoLogins) && (
-                    <div className="mt-5">
-                        <div className="flex items-center">
-                            <div className="flex-1 h-px bg-gray-200 dark:bg-gray-600"></div>
-                            <div className="w-2 h-2 rotate-45 mx-4 bg-primary"></div>
-                            <div className="flex-1 h-px bg-gray-200 dark:bg-gray-600"></div>
-                        </div>
+                <div className="mt-5">
+                    <div className="flex items-center">
+                        <div className="flex-1 h-px bg-gray-200 dark:bg-gray-600"></div>
+                        <div className="w-2 h-2 rotate-45 mx-4 bg-primary"></div>
+                        <div className="flex-1 h-px bg-gray-200 dark:bg-gray-600"></div>
                     </div>
-                )}
+                </div>
 
-                {(isDemo || demoLogins) && (
-                    <div>
-                        <h3 className="text-sm font-medium text-gray-900 dark:text-gray-300 tracking-wider mb-4 text-center">{t('Quick Access')}</h3>
-                        <div className="grid sm:grid-cols-2 gap-3">
-                            {/* Company only. The super admin shortcut was removed;
-                                that account is signed into through the form. */}
-                            <Button
-                                type="button"
-                                onClick={() => handleQuickLogin('company@example.com', '1234')}
-                                disabled={processing}
-                                className="sm:col-span-2 group h-auto relative py-2 px-4 border text-[13px] font-medium text-white transition-all duration-200 rounded-md shadow-sm hover:shadow-md transform hover:scale-[1.02] bg-primary disabled:opacity-50"
-                            >
-                                {t('Login as Company')}
-                            </Button>
-                        </div>
+                <div>
+                    <h3 className="text-sm font-medium text-gray-900 dark:text-gray-300 tracking-wider mb-4 text-center">{t('Quick Access')}</h3>
+                    <div className="grid gap-3">
+                        <Button
+                            type="button"
+                            onClick={() => handleQuickLogin('company@example.com', '1234')}
+                            disabled={processing}
+                            className="group h-auto relative py-2 px-4 border text-[13px] font-medium text-white transition-all duration-200 rounded-md shadow-sm hover:shadow-md transform hover:scale-[1.02] bg-primary disabled:opacity-50"
+                        >
+                            {t('Login as Company')}
+                        </Button>
                     </div>
-                )}
+                </div>
             </form>
         </AuthLayout>
     );
