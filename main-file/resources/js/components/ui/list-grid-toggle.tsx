@@ -19,7 +19,7 @@ export function ListGridToggle({ currentView, routeName, routeParams = [], filte
             onViewChange(view);
         }
         
-        router.get(route(routeName, ...routeParams), params, {
+        router.get(String(route(routeName, ...routeParams)), params, {
             preserveState: false,
             replace: true
         });
