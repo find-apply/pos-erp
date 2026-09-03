@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { router } from '@inertiajs/react';
 import { useTranslation } from 'react-i18next';
 import { MapPin } from 'lucide-react';
 import { toast } from 'sonner';
@@ -23,9 +22,8 @@ const DOT_TONES: Record<PermissionState, string> = {
 /**
  * Asks the device for location access, and shows whether it has it.
  *
- * Granting permission is not the same as being tracked: the backend still
- * only accepts pings during an explicit tracking session, so this button
- * unlocks the ability to start one rather than starting one itself.
+ * Granting permission is not the same as being tracked. This button stores
+ * the driver's latest position without moving them away from the current page.
  */
 export function GpsButton() {
     const { t } = useTranslation();
@@ -73,8 +71,6 @@ export function GpsButton() {
         };
     }, []);
 
-    const openTracking = useCallback(() => router.visit(route('fleet-tracking.mobile')), []);
-
     const savePosition = useCallback((position: GeolocationPosition) => {
         return axios.post(route('distribution.driver.location'), {
             latitude: position.coords.latitude,
@@ -96,7 +92,6 @@ export function GpsButton() {
                         setIsAsking(false);
                         setState('granted');
                         toast.success(t('Location access granted.'));
-                        openTracking();
                     });
             },
             (error) => {
@@ -113,7 +108,7 @@ export function GpsButton() {
             },
             { enableHighAccuracy: true, timeout: 10000 }
         );
-    }, [openTracking, savePosition, t]);
+    }, [savePosition, t]);
 
     const handleClick = () => {
         if (state === 'unsupported') {
