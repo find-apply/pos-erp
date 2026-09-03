@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { MapPin } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import axios from 'axios';
 
 declare global {
     function route(name: string, params?: any): string;
@@ -74,32 +75,29 @@ export function GpsButton() {
 
     const openTracking = useCallback(() => router.visit(route('fleet-tracking.mobile')), []);
 
-    const handleClick = () => {
-        if (state === 'unsupported') {
-            toast.error(t('This device cannot share its location.'));
-            return;
-        }
+    const savePosition = useCallback((position: GeolocationPosition) => {
+        return axios.post(route('distribution.driver.location'), {
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude,
+        });
+    }, []);
 
-        if (state === 'denied') {
-            toast.error(t('Location is blocked. Allow it for this site in your browser settings.'));
-            return;
-        }
-
-        if (state === 'granted') {
-            openTracking();
-            return;
-        }
-
-        // Asking for a position is what raises the browser prompt; there is no
-        // way to request the permission on its own.
+    const requestAndSavePosition = useCallback(() => {
         setIsAsking(true);
         navigator.geolocation.getCurrentPosition(
-            () => {
+            (position) => {
                 if (!mountedRef.current) return;
-                setIsAsking(false);
-                setState('granted');
-                toast.success(t('Location access granted.'));
-                openTracking();
+                savePosition(position)
+                    .catch(() => {
+                        toast.error(t('Location was allowed, but the position was not saved.'));
+                    })
+                    .finally(() => {
+                        if (!mountedRef.current) return;
+                        setIsAsking(false);
+                        setState('granted');
+                        toast.success(t('Location access granted.'));
+                        openTracking();
+                    });
             },
             (error) => {
                 if (!mountedRef.current) return;
@@ -115,6 +113,27 @@ export function GpsButton() {
             },
             { enableHighAccuracy: true, timeout: 10000 }
         );
+    }, [openTracking, savePosition, t]);
+
+    const handleClick = () => {
+        if (state === 'unsupported') {
+            toast.error(t('This device cannot share its location.'));
+            return;
+        }
+
+        if (state === 'denied') {
+            toast.error(t('Location is blocked. Allow it for this site in your browser settings.'));
+            return;
+        }
+
+        if (state === 'granted') {
+            requestAndSavePosition();
+            return;
+        }
+
+        // Asking for a position is what raises the browser prompt; there is no
+        // way to request the permission on its own.
+        requestAndSavePosition();
     };
 
     const label =

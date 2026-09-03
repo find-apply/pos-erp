@@ -34,6 +34,8 @@ class DriverPortalController extends Controller
             return redirect()->route('distribution.driver.access');
         }
 
+        $driver->forceFill(['last_app_opened_at' => now()])->save();
+
         return Inertia::render('Distribution/Driver/Home', array_merge(
             $this->portal->dashboard($driver),
             ['driver' => $this->driverPayload($driver)]
@@ -154,6 +156,28 @@ class DriverPortalController extends Controller
             $this->portal->mapData($driver),
             ['driver' => $this->driverPayload($driver)]
         ));
+    }
+
+    public function storeLocation(Request $request)
+    {
+        $driver = $this->currentDriver();
+
+        if (!$driver) {
+            return response()->json(['message' => __('Permission denied')], 403);
+        }
+
+        $validated = $request->validate([
+            'latitude' => ['required', 'numeric', 'between:-90,90'],
+            'longitude' => ['required', 'numeric', 'between:-180,180'],
+        ]);
+
+        $driver->forceFill([
+            'last_latitude' => round((float) $validated['latitude'], 7),
+            'last_longitude' => round((float) $validated['longitude'], 7),
+            'last_position_at' => now(),
+        ])->save();
+
+        return response()->json(['ok' => true]);
     }
 
     private function driverPayload(Driver $driver): array

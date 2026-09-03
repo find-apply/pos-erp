@@ -29,6 +29,10 @@ class Driver extends Model
         'max_discount_value',
         'cash_balance',
         'status',
+        'last_latitude',
+        'last_longitude',
+        'last_position_at',
+        'last_app_opened_at',
         'creator_id',
         'created_by',
     ];
@@ -39,6 +43,10 @@ class Driver extends Model
             'allow_credit' => 'boolean',
             'max_discount_value' => 'decimal:2',
             'cash_balance' => 'decimal:2',
+            'last_latitude' => 'decimal:7',
+            'last_longitude' => 'decimal:7',
+            'last_position_at' => 'datetime',
+            'last_app_opened_at' => 'datetime',
         ];
     }
 

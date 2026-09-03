@@ -2,7 +2,7 @@ import { FormEvent, useEffect, useMemo, useRef, useState } from 'react';
 import { Head, router, useForm, usePage } from '@inertiajs/react';
 import { useTranslation } from 'react-i18next';
 import QRCode from 'qrcode';
-import { ArrowUpDown, Key, LogIn, MoreVertical, Package, PackageCheck, PackageMinus, PackagePlus, Pencil, Plus, RefreshCw, Search, Target, Trash2, Truck, Wallet } from 'lucide-react';
+import { ArrowUpDown, Clock, Key, LogIn, MapPin, MoreVertical, Package, PackageCheck, PackageMinus, PackagePlus, Pencil, Plus, RefreshCw, Search, Target, Trash2, Truck, Wallet } from 'lucide-react';
 import AuthenticatedLayout from '@/layouts/authenticated-layout';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -43,6 +43,10 @@ type DriverCard = {
     failed: number;
     collected: number;
     success_rate: number;
+    last_latitude: number | null;
+    last_longitude: number | null;
+    last_position_at: string | null;
+    last_app_opened_at: string | null;
 };
 
 type Option = { id: number; name: string };
@@ -73,6 +77,17 @@ type DriverForm = {
 const accessUrl = (code: string) => `${route('distribution.driver.access')}?c=${code}`;
 
 const rateTone = (rate: number): 'green' | 'orange' | 'red' => (rate >= 80 ? 'green' : rate >= 50 ? 'orange' : 'red');
+
+const formatDateTime = (value: string | null) => {
+    if (!value) return '-';
+
+    return new Intl.DateTimeFormat(undefined, {
+        dateStyle: 'medium',
+        timeStyle: 'short',
+    }).format(new Date(value));
+};
+
+const mapUrl = (latitude: number, longitude: number) => `https://www.google.com/maps?q=${latitude},${longitude}`;
 
 /** Six random digits, matching what the backend would otherwise generate. */
 const randomAccessCode = () => String(Math.floor(Math.random() * 1_000_000)).padStart(6, '0');
@@ -655,6 +670,37 @@ export default function Drivers() {
                                             {t('Settle cash')}
                                         </Button>
                                     )}
+
+                                    <div className="mt-4 space-y-3 border-t pt-4">
+                                        <div className="flex items-start gap-2">
+                                            <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
+                                            <div className="min-w-0">
+                                                <p className="text-xs text-muted-foreground">{t('Last position')}</p>
+                                                {driver.last_latitude !== null && driver.last_longitude !== null ? (
+                                                    <a
+                                                        href={mapUrl(driver.last_latitude, driver.last_longitude)}
+                                                        target="_blank"
+                                                        rel="noreferrer"
+                                                        className="text-sm font-medium text-primary hover:underline"
+                                                    >
+                                                        {driver.last_latitude.toFixed(5)}, {driver.last_longitude.toFixed(5)}
+                                                    </a>
+                                                ) : (
+                                                    <p className="text-sm font-medium">-</p>
+                                                )}
+                                                <p className="text-xs text-muted-foreground">
+                                                    {formatDateTime(driver.last_position_at)}
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <div className="flex items-start gap-2">
+                                            <Clock className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
+                                            <div className="min-w-0">
+                                                <p className="text-xs text-muted-foreground">{t('Last app open')}</p>
+                                                <p className="text-sm font-medium">{formatDateTime(driver.last_app_opened_at)}</p>
+                                            </div>
+                                        </div>
+                                    </div>
 
                                     {driver.total > 0 && (
                                         <div className="mt-4 space-y-1.5 border-t pt-4">

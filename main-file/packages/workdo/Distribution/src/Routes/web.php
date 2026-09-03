@@ -65,6 +65,7 @@ Route::middleware(['web'])
             Route::get('/debts', [DriverPortalController::class, 'debts'])->name('debts');
             Route::get('/more', [DriverPortalController::class, 'more'])->name('more');
             Route::get('/map', [DriverPortalController::class, 'map'])->name('map');
+            Route::post('/location', [DriverPortalController::class, 'storeLocation'])->name('location');
             Route::get('/printer', [DriverPortalController::class, 'printer'])->name('printer');
             Route::put('/notes/{note}/transit', [DriverPortalController::class, 'startTransit'])->name('notes.transit');
             Route::put('/notes/{note}/complete', [DriverPortalController::class, 'completeNote'])->name('notes.complete');
